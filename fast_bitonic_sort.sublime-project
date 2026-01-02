@@ -42,6 +42,11 @@
 		            "shell_cmd": "python plot_series.py",
 		            "name": "Plot Series"
 		        },
+		        {
+		    		"working_dir": "${project_path}/plot",
+		            "shell_cmd": "del series_*",
+		            "name": "Delete Series"
+		        },
 		    ]
 		}
     ]
