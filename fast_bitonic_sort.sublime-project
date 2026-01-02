@@ -29,6 +29,11 @@
 		        },
 		        {
 		    		"working_dir": "${file_path}",
+		            "shell_cmd": "${project_path}/Odin/odin build . -show-timings -o:speed -no-bounds-check -use-separate-modules",
+		            "name": "Build Optimized"
+		        },
+		        {
+		    		"working_dir": "${file_path}",
 		            "shell_cmd": "${project_path}/Odin/odin run . -show-timings -o:speed -no-bounds-check",
 		            "name": "Run package"
 		        },
