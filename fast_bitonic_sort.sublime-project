@@ -1,0 +1,38 @@
+{
+	"folders": [
+		{
+			"name": "Fast Bitonic Sort Root",
+			"path": ".",
+			"folder_exclude_patterns": [
+			],
+			"file_exclude_patterns": [
+			],
+
+			"binary_file_patterns": [
+			]
+		},
+	],
+	"build_systems": [
+    	{
+	    	"shell_cmd": "Odin\\odin run . -show-timings -o:speed -no-bounds-check",
+		    "file_regex": "^\\s*((?:.+?)[\\/\\\\](?:[^\\/\\\\]+?))\\((\\d+)\\:(\\d+)\\)[\\s\\w]+\\:\\s(.+)$",
+		    "selector": "source.odin",
+		    "name": "Fast Bitonic Sort",
+			"working_dir": "${project_path:${folder}}",
+            "shell": true,
+
+		    "variants": [
+		    	{
+		    		"working_dir": "${file_path}",
+		            "shell_cmd": "${project_path}/Odin/odin run . -show-timings -o:speed -no-bounds-check",
+		            "name": "Run package"
+		        },
+		        {
+		    		"working_dir": "${project_path}/plot",
+		            "shell_cmd": "python plot_series.py",
+		            "name": "Plot Series"
+		        },
+		    ]
+		}
+    ]
+}
