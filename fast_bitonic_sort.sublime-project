@@ -14,7 +14,7 @@
 	],
 	"build_systems": [
     	{
-	    	"shell_cmd": "Odin\\odin run . -show-timings -o:speed -no-bounds-check",
+	    	"shell_cmd": "Odin\\odin run . -show-timings",
 		    "file_regex": "^\\s*((?:.+?)[\\/\\\\](?:[^\\/\\\\]+?))\\((\\d+)\\:(\\d+)\\)[\\s\\w]+\\:\\s(.+)$",
 		    "selector": "source.odin",
 		    "name": "Fast Bitonic Sort",
@@ -23,6 +23,11 @@
 
 		    "variants": [
 		    	{
+		    		"working_dir": "${file_path}",
+		            "shell_cmd": "${project_path}/Odin/odin run . -show-timings -o:speed -no-bounds-check -use-separate-modules",
+		            "name": "Run Optimized"
+		        },
+		        {
 		    		"working_dir": "${file_path}",
 		            "shell_cmd": "${project_path}/Odin/odin run . -show-timings -o:speed -no-bounds-check",
 		            "name": "Run package"
