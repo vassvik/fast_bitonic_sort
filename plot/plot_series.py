@@ -13,7 +13,7 @@ def find_best_fit(N, r):
 
 files = [
 	"series_Init.txt",
-	"series_Sort.txt",
+	"series_Sort_N262144_0.txt",
 	"series_Verify.txt",
 	"series_Sort _1024.txt",
 	"series_Sort _2048.txt",
@@ -31,6 +31,8 @@ files = [
 ]
 
 R, C = 4, 4
+
+
 fig1, axes1 = plt.subplots(R, C, figsize=(16,9))
 fig1.subplots_adjust(hspace=0.35, wspace=0.2, top=0.97, bottom=0.04, left=0.03, right=0.97)
 
@@ -71,5 +73,42 @@ for i in range(len(files)):
 
 ax3.grid()
 ax3.legend()
+
+
+
+
+
+fig, axes = plt.subplots(1, 2, figsize=(16,9))
+
+for log2N in reversed(range(10, 19)):
+	N = 2**log2N
+	files = ["series_Sort_N{}_{}.txt".format(N, i) for i in range(log2N)]
+	medians = []
+	for i in range(len(files)):
+		filename = files[i]
+		try:
+			timestep, time = numpy.loadtxt(files[i], unpack=True)
+			medians.append(numpy.median(time))
+		except:
+			print("WHAT3", filename)
+
+	Ns = numpy.array([i+1 for i in range(log2N)])
+
+	axes[0].plot(Ns, numpy.array(medians)*1e6, 'o-', label="N{}".format(N))
+
+	diffs = numpy.array([medians[0]] + list(numpy.diff(medians)))*1e6
+
+	axes[1].plot(Ns, diffs/Ns, 'o-', label="N{}".format(N))
+
+axes[0].legend()
+axes[1].legend()
+axes[0].set_ylim([0, 450])
+axes[1].set_ylim([0.5, 2.75])
+
+axes[0].set_xlabel("log2(segment length)")
+axes[1].set_xlabel("log2(segment length)")
+axes[0].set_ylabel("total time (µs)")
+axes[1].set_ylabel("time/stage (µs)")
+fig.suptitle("Workgroup Size 256")
 
 plt.show()

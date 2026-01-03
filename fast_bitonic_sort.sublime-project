@@ -38,6 +38,11 @@
 		            "name": "Run package"
 		        },
 		        {
+		    		"working_dir": "${file_path}",
+		            "shell_cmd": "${project_path}/Odin/odin run $file -file -show-timings -o:speed -no-bounds-check",
+		            "name": "Run file"
+		        },
+		        {
 		    		"working_dir": "${project_path}/plot",
 		            "shell_cmd": "python plot_series.py",
 		            "name": "Plot Series"
