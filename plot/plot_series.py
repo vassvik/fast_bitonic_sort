@@ -2,15 +2,7 @@ import numpy
 import glob
 import matplotlib.pyplot as plt 
 
-def find_best_fit(N, r):
-	R = 1
-	C = 1
-	while R*C < N:
-		if C/R < r: C += 1
-		else:       R += 1
-	return (R, C)
-
-
+"""
 files = [
 	"series_Init.txt",
 	"series_Sort_N262144_0.txt",
@@ -75,7 +67,7 @@ ax3.grid()
 ax3.legend()
 
 
-
+"""
 
 
 fig, axes = plt.subplots(1, 2, figsize=(16,9))
@@ -109,6 +101,6 @@ axes[0].set_xlabel("log2(segment length)")
 axes[1].set_xlabel("log2(segment length)")
 axes[0].set_ylabel("total time (µs)")
 axes[1].set_ylabel("time/stage (µs)")
-fig.suptitle("Workgroup Size 256")
+fig.suptitle("256 threads, out-of-place")
 
 plt.show()
