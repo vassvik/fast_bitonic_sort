@@ -103,7 +103,7 @@ for log2N in reversed(range(10, 19)):
 axes[0].legend()
 axes[1].legend()
 axes[0].set_ylim([0, 450])
-axes[1].set_ylim([0.5, 2.75])
+axes[1].set_ylim([0.5, 5])
 
 axes[0].set_xlabel("log2(segment length)")
 axes[1].set_xlabel("log2(segment length)")
