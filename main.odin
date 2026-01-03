@@ -42,25 +42,7 @@ Bitonic_Sorting_Stages :: enum u32 {
 	_262144_2
 }
 
-max_Ns := [Bitonic_Sorting_Stages]u32 {
-	._1024 = 1024,
-	._2048 = 2048,
-	._4096 = 4096,
-	._8192 = 8192,
-	._16384 = 16384,
-	//._32768 = 32768,
-	._32768_1 = 32768,
-	._32768_2 = 32768,
-	//._65536 = 65536,
-	._65536_1 = 65536,
-	._65536_2 = 65536,
-	//._131072 = 131072,
-	._131072_1 = 131072,
-	._131072_2 = 131072,
-	//._262144 = 262144,
-	._262144_1 = 262144,
-	._262144_2 = 262144
-}
+
 bitonic_sort_programs: [Bitonic_Sorting_Stages]Program
 
 N := u32(262144/4)
@@ -176,10 +158,29 @@ main :: proc() {
 		    {
         		GL_LABEL_BLOCK("Sort")	
 				block_query("Sort", step)
-			    for stage in Bitonic_Sorting_Stages {
-			    	if N <= max_Ns[stage]/2 do continue
-			    	sort_pass(stage)
-			    }
+				if N >   0*1024 do sort_pass(._1024)
+				if N >   1*1024 do sort_pass(._2048)
+				if N >   2*1024 do sort_pass(._4096)
+				if N >   4*1024 do sort_pass(._8192)
+				if N >   8*1024 do sort_pass(._16384)
+				//if N >  16*1024 do sort_pass(._32768)
+				if N >  16*1024 do sort_pass(._32768_1)
+				if N >  16*1024 do sort_pass(._32768_2)
+				//if N >  32*1024 do sort_pass(._65536)
+				if N >  32*1024 do sort_pass(._65536_1)
+				if N >  32*1024 do sort_pass(._65536_2)
+				//if N >  64*1024 do sort_pass(._131072)
+				if N >  64*1024 do sort_pass(._131072_1)
+				if N >  64*1024 do sort_pass(._131072_2)
+				//if N > 128*1024 do sort_pass(._262144)
+				if N > 128*1024 do sort_pass(._262144_1)
+				if N > 128*1024 do sort_pass(._262144_2)
+
+
+			    //for stage in Bitonic_Sorting_Stages {
+			    //	if N <= max_Ns[stage]/2 do continue
+			    //	sort_pass(stage)
+			    //}
 		    }
 
 		    {
@@ -206,7 +207,8 @@ main :: proc() {
     			block_query("Verify", step)
 		        gl.GetNamedBufferSubData(bitonic_verify_data, 0, 4*32, &is_sorted)
 		        for i in 0..<32 {
-		        	if !is_sorted[i] do fmt.println("Not Sorted", 1<<u32(i))
+		        	if (1<<u32(i)) > N do continue
+		        	if !is_sorted[i] do fmt.println("Not Sorted", i, 1<<u32(i))
 		        }
 		    }
         }
