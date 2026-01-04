@@ -105,7 +105,7 @@ if False:
 	fig.suptitle("256 threads, out-of-place")
 
 
-if True:
+if False:
 	fig, axes = plt.subplots(1, 2, figsize=(16,9))
 
 	medians = []
@@ -141,4 +141,14 @@ if True:
 	axes[1].set_ylabel("time/stage (µs)")
 	fig.suptitle("256 threads, out-of-place")
 
+
+for file in glob.glob("series_*.txt"):
+	timestep, time = numpy.loadtxt(file, unpack=True)
+
+	name = file[len("series_"):len(file)-len(".txt")]
+
+	plt.figure(name)
+	plt.plot(timestep, time*1e6)
+
+	print(name, numpy.median(time*1e6))
 plt.show()
