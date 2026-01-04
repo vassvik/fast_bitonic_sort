@@ -140,7 +140,7 @@ main :: proc() {
     N := u32(256*1024)
     step := 0
     outer: 
-    for N := u32(1024); N <= 8192 + 0*256*1024; N *= 2 {
+    for N := u32(1024); N <= 16384 + 0*256*1024; N *= 2 {
     	fmt.println("N =", N)
 	    for M := u32(0); M < 1 + 0*bits.log2(N); M += 1 {
 	    	fmt.println("M =", M)
@@ -301,7 +301,7 @@ main :: proc() {
 							if N >   1*1024 do sort2_pass(N, 1, ._2048)
 							if N >   2*1024 do sort2_pass(N, 1, ._4096)
 							if N >   4*1024 do sort2_pass(N, 1, ._8192)
-							//if N >   8*1024 do sort2_pass(N, ._16384)
+							if N >   8*1024 do sort2_pass(N, 1, ._16384)
 							////if N >  16*1024 do sort2_pass(N, ._32768)
 							//if N >  16*1024 do sort2_pass(N, ._32768_1)
 							//if N >  16*1024 do sort2_pass(N, ._32768_2)
