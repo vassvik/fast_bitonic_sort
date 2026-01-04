@@ -125,7 +125,7 @@ main :: proc() {
     outer: 
     for N := u32(1024); N <= 256*1024; N *= 2 {
     	fmt.println("N =", N)
-	    for M := u32(0); M < bits.log2(N); M += 1 {
+	    for M := u32(0); M < 1 + 0*bits.log2(N); M += 1 {
 	    	fmt.println("M =", M)
 	    	for step := 0; step < 400; step += 1 {
 		    	if glfw.WindowShouldClose(window) do break
@@ -216,7 +216,7 @@ main :: proc() {
 		        		GL_LABEL_BLOCK("Sort")	
 						block_query(fmt.tprintf("Sort_N%d_%d", N, M), step)
 
-						if true {
+						if false {
 							for i in u32(0)..<u32(1+M) {
 								sort_pass_base(N, (2 << i) - 1, 1 << i)
 								for j in 0..<i {
@@ -235,7 +235,7 @@ main :: proc() {
 								}
 								//fmt.println()
 							}
-						} else if true {
+						} else if false {
 							for i in u32(0)..<u32(1+M) {
 								a := u32(1)<<i
 								//fmt.println(i, a+(a-1))
@@ -247,25 +247,25 @@ main :: proc() {
 								}
 								//fmt.println()
 							}
+						} else {
+							if N >   0*1024 do sort_pass(N, ._1024)
+							if N >   1*1024 do sort_pass(N, ._2048)
+							if N >   2*1024 do sort_pass(N, ._4096)
+							if N >   4*1024 do sort_pass(N, ._8192)
+							if N >   8*1024 do sort_pass(N, ._16384)
+							//if N >  16*1024 do sort_pass(N, ._32768)
+							if N >  16*1024 do sort_pass(N, ._32768_1)
+							if N >  16*1024 do sort_pass(N, ._32768_2)
+							//if N >  32*1024 do sort_pass(N, ._65536)
+							if N >  32*1024 do sort_pass(N, ._65536_1)
+							if N >  32*1024 do sort_pass(N, ._65536_2)
+							//if N >  64*1024 do sort_pass(N, ._131072)
+							if N >  64*1024 do sort_pass(N, ._131072_1)
+							if N >  64*1024 do sort_pass(N, ._131072_2)
+							//if N > 128*1024 do sort_pass(N, ._262144)
+							if N > 128*1024 do sort_pass(N, ._262144_1)
+							if N > 128*1024 do sort_pass(N, ._262144_2)
 						}
-						
-						//if N >   0*1024 do sort_pass(N, ._1024)
-						//if N >   1*1024 do sort_pass(N, ._2048)
-						//if N >   2*1024 do sort_pass(N, ._4096)
-						//if N >   4*1024 do sort_pass(N, ._8192)
-						//if N >   8*1024 do sort_pass(N, ._16384)
-						////if N >  16*1024 do sort_pass(N, ._32768)
-						//if N >  16*1024 do sort_pass(N, ._32768_1)
-						//if N >  16*1024 do sort_pass(N, ._32768_2)
-						////if N >  32*1024 do sort_pass(N, ._65536)
-						//if N >  32*1024 do sort_pass(N, ._65536_1)
-						//if N >  32*1024 do sort_pass(N, ._65536_2)
-						////if N >  64*1024 do sort_pass(N, ._131072)
-						//if N >  64*1024 do sort_pass(N, ._131072_1)
-						//if N >  64*1024 do sort_pass(N, ._131072_2)
-						////if N > 128*1024 do sort_pass(N, ._262144)
-						//if N > 128*1024 do sort_pass(N, ._262144_1)
-						//if N > 128*1024 do sort_pass(N, ._262144_2)
 
 				    }
 

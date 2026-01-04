@@ -70,37 +70,75 @@ ax3.legend()
 """
 
 
-fig, axes = plt.subplots(1, 2, figsize=(16,9))
+if False:
+	fig, axes = plt.subplots(1, 2, figsize=(16,9))
 
-for log2N in reversed(range(10, 19)):
-	N = 2**log2N
-	files = ["series_Sort_N{}_{}.txt".format(N, i) for i in range(log2N)]
+	for log2N in reversed(range(10, 19)):
+		N = 2**log2N
+		files = ["series_Sort_N{}_{}.txt".format(N, i) for i in range(1)]
+		medians = []
+		for i in range(len(files)):
+			filename = files[i]
+			try:
+				timestep, time = numpy.loadtxt(files[i], unpack=True)
+				medians.append(numpy.median(time))
+			except:
+				print("WHAT3", filename)
+
+		Ns = numpy.array([i+1 for i in range(log2N)])
+
+		axes[0].plot(Ns, numpy.array(medians)*1e6, 'o-', label="N{}".format(N))
+
+		diffs = numpy.array([medians[0]] + list(numpy.diff(medians)))*1e6
+
+		axes[1].plot(Ns, diffs/Ns, 'o-', label="N{}".format(N))
+
+	axes[0].legend()
+	axes[1].legend()
+	axes[0].set_ylim([0, 450])
+	axes[1].set_ylim([0.5, 5])
+
+	axes[0].set_xlabel("log2(segment length)")
+	axes[1].set_xlabel("log2(segment length)")
+	axes[0].set_ylabel("total time (µs)")
+	axes[1].set_ylabel("time/stage (µs)")
+	fig.suptitle("256 threads, out-of-place")
+
+
+if True:
+	fig, axes = plt.subplots(1, 2, figsize=(16,9))
+
 	medians = []
-	for i in range(len(files)):
-		filename = files[i]
-		try:
-			timestep, time = numpy.loadtxt(files[i], unpack=True)
-			medians.append(numpy.median(time))
-		except:
-			print("WHAT3", filename)
+	for log2N in range(10, 19):
+		N = 2**log2N
+		files = ["series_Sort_N{}_{}.txt".format(N, i) for i in range(1)]
+		for i in range(len(files)):
+			filename = files[i]
+			try:
+				timestep, time = numpy.loadtxt(files[i], unpack=True)
+				medians.append(numpy.median(time))
+			except:
+				print("WHAT3", filename)
 
-	Ns = numpy.array([i+1 for i in range(log2N)])
+	Ns = numpy.array([i+1 for i in range(len(medians))])
 
-	axes[0].plot(Ns, numpy.array(medians)*1e6, 'o-', label="N{}".format(N))
+	axes[0].plot(Ns, numpy.array(medians)*1e6, 'o-')
 
+	print(numpy.array(medians)*1e6)
 	diffs = numpy.array([medians[0]] + list(numpy.diff(medians)))*1e6
+	print(diffs)
 
-	axes[1].plot(Ns, diffs/Ns, 'o-', label="N{}".format(N))
+	axes[1].plot(Ns, diffs, 'o-', label="N{}".format(N))
 
-axes[0].legend()
-axes[1].legend()
-axes[0].set_ylim([0, 450])
-axes[1].set_ylim([0.5, 5])
+	axes[0].legend()
+	axes[1].legend()
+	axes[0].set_ylim([0, 100])
+	axes[1].set_ylim([0.0, 45])
 
-axes[0].set_xlabel("log2(segment length)")
-axes[1].set_xlabel("log2(segment length)")
-axes[0].set_ylabel("total time (µs)")
-axes[1].set_ylabel("time/stage (µs)")
-fig.suptitle("256 threads, out-of-place")
+	axes[0].set_xlabel("log2(segment length)")
+	axes[1].set_xlabel("log2(segment length)")
+	axes[0].set_ylabel("total time (µs)")
+	axes[1].set_ylabel("time/stage (µs)")
+	fig.suptitle("256 threads, out-of-place")
 
 plt.show()

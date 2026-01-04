@@ -48,6 +48,11 @@
 		            "name": "Plot Series"
 		        },
 		        {
+		    		"working_dir": "${file_path}",
+		            "shell_cmd": "python $file",
+		            "name": "Python"
+		        },
+		        {
 		    		"working_dir": "${project_path}/plot",
 		            "shell_cmd": "del series_*",
 		            "name": "Delete Series"
