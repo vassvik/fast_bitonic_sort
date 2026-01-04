@@ -160,6 +160,15 @@ void sort_1_to_1024() {
     sorted0 = sort_wave(sorted0);
     sorted1 = sort_wave(sorted1);
     
+    sorted1 = subgroupShuffleXor(sorted1, 31);    
+    uint temp = min(sorted0, sorted1);
+    sorted1 = max(sorted0, sorted1);
+    sorted0 = temp;
+    sorted1 = subgroupShuffleXor(sorted1, 31);
+
+    sorted0 = finalize_wave(sorted0);
+    sorted1 = finalize_wave(sorted1);
+
 /*
     /// sort64
     s_partially_sorted[(lindex)] = sorted0;
