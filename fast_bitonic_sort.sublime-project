@@ -18,7 +18,7 @@
 		    "file_regex": "^\\s*((?:.+?)[\\/\\\\](?:[^\\/\\\\]+?))\\((\\d+)\\:(\\d+)\\)[\\s\\w]+\\:\\s(.+)$",
 		    "selector": "source.odin",
 		    "name": "Fast Bitonic Sort",
-			"working_dir": "${project_path:${folder}}",
+			"working_dir": "${project_path}",
             "shell": true,
 
 		    "variants": [
