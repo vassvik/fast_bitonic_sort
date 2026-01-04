@@ -56,12 +56,51 @@ T sort_wave(T value) {
     return value;
 }
 
+T sort_wave_reverse(T value) {
+    // layer 0
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) == 0);
+
+    // layer 1
+    value = compare_and_select(value, shfl(value, 3),  (sid&2) == 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) == 0);
+
+    // layer 2
+    value = compare_and_select(value, shfl(value, 7),  (sid&4) == 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) == 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) == 0);
+
+    // layer 3
+    value = compare_and_select(value, shfl(value, 15), (sid&8) == 0);
+    value = compare_and_select(value, shfl(value, 4),  (sid&4) == 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) == 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) == 0);
+
+    // layer 4
+    value = compare_and_select(value, shfl(value, 31), (sid&16) == 0);
+    value = compare_and_select(value, shfl(value, 8),  (sid&8) == 0);
+    value = compare_and_select(value, shfl(value, 4),  (sid&4) == 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) == 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) == 0);
+
+    return value;
+}
+
 T finalize_wave(T value) {
     value = compare_and_select(value, shfl(value, 16), (sid&16) != 0);
     value = compare_and_select(value, shfl(value, 8),  (sid&8) != 0);
     value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
     value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
     value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
+
+    return value;
+}
+
+T finalize_wave_reverse(T value) {
+    value = compare_and_select(value, shfl(value, 16), (sid&16) == 0);
+    value = compare_and_select(value, shfl(value, 8),  (sid&8) == 0);
+    value = compare_and_select(value, shfl(value, 4),  (sid&4) == 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) == 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) == 0);
 
     return value;
 }
@@ -163,11 +202,9 @@ void sort_1_to_1024() {
 
     /// sort32
     sorted0 = sort_wave(sorted0);
-    sorted1 = sort_wave(sorted1);
+    sorted1 = sort_wave_reverse(sorted1);
     
-    sorted1 = subgroupShuffleXor(sorted1, 31);    
     min_max(sorted0, sorted1);
-    sorted1 = subgroupShuffleXor(sorted1, 31);
 
     sorted0 = finalize_wave(sorted0);
     sorted1 = finalize_wave(sorted1);
