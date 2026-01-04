@@ -187,13 +187,12 @@ void sort_1_to_1024() {
 
     sorted0 = finalize_wave(sorted0);
     sorted1 = finalize_wave(sorted1);
-/*
 
     /// sort256
     s_partially_sorted[(lindex)] = sorted0;
+    s_partially_sorted[(lindex^32)] = sorted1;
     barrier();
 
-    sorted1 = s_partially_sorted[(lindex^(1*32))];
     sorted2 = s_partially_sorted[(lindex^(2*32))];
     sorted3 = s_partially_sorted[(lindex^(3*32))];
     sorted4 = s_partially_sorted[(lindex^(0*32)^255)];
@@ -209,9 +208,11 @@ void sort_1_to_1024() {
     sorted0 = compare_and_select(sorted0, sorted2, (lindex&64) != 0); 
     sorted1 = compare_and_select(sorted1, sorted3, (lindex&64) != 0); 
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&32) != 0); 
+    min_max(sorted0, sorted1);
 
     sorted0 = finalize_wave(sorted0);
+    sorted1 = finalize_wave(sorted1);
+/*
 
     /// sort512
     s_partially_sorted2[(lindex)] = sorted0;
