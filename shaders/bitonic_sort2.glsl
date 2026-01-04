@@ -337,7 +337,7 @@ void sort_1_to_1024() {
 
 void sort_1024_to_2048() {
     uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
+    uint gid = 512 * gl_WorkGroupID.x + lindex;
 
     T sorted[4];
     for (uint i = 0; i < 2; i++) {

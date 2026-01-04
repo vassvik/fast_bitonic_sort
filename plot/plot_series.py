@@ -147,8 +147,11 @@ for file in glob.glob("series_*.txt"):
 
 	name = file[len("series_"):len(file)-len(".txt")]
 
-	plt.figure(name)
-	plt.plot(timestep, time*1e6)
+	#plt.figure(name)
+	#plt.plot(time)
 
-	print(name, numpy.median(time*1e6))
+	time = sorted(time*1e6)
+	time = time[:]
+	#print(name, numpy.average(time), numpy.std(time), numpy.std(time)/numpy.sqrt(len(time)))
+	print(name, numpy.median(time))
 plt.show()

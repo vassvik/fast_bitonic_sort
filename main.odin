@@ -140,7 +140,7 @@ main :: proc() {
     N := u32(256*1024)
     step := 0
     outer: 
-    for N := u32(1024); N <= 1024 + 0*256*1024; N *= 2 {
+    for N := u32(1024); N <= 2048 + 0*256*1024; N *= 2 {
     	fmt.println("N =", N)
 	    for M := u32(0); M < 1 + 0*bits.log2(N); M += 1 {
 	    	fmt.println("M =", M)
@@ -185,7 +185,7 @@ main :: proc() {
 				        bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 				    }
 
-				    sort2_pass :: proc(N: u32, stage: Bitonic_Sorting_Stages) {
+				    sort2_pass :: proc(N, mul: u32, stage: Bitonic_Sorting_Stages) {
 				    	//GL_LABEL_BLOCK(fmt.tprintf("Sort Stage: %v", stage))	
 				    	gl.UseProgram(bitonic_sort2_programs[stage])
 				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, bitonic_data[0]);
@@ -193,7 +193,7 @@ main :: proc() {
 
 				    	gl.MemoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
 						//block_query(fmt.tprintf("Sort %v", stage), step)
-				        gl.DispatchCompute(N / 512 / 2, 1, 1)
+				        gl.DispatchCompute(N / 512 / mul, 1, 1)
 
 				        bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 				    }
@@ -297,8 +297,8 @@ main :: proc() {
 							if N > 128*1024 do sort_pass(N, ._262144_1)
 							if N > 128*1024 do sort_pass(N, ._262144_2)
 						} else {
-							if N >   0*1024 do sort2_pass(N, ._1024)
-							//if N >   1*1024 do sort2_pass(N, ._2048)
+							if N >   0*1024 do sort2_pass(N, 2, ._1024)
+							if N >   1*1024 do sort2_pass(N, 1, ._2048)
 							//if N >   2*1024 do sort2_pass(N, ._4096)
 							//if N >   4*1024 do sort2_pass(N, ._8192)
 							//if N >   8*1024 do sort2_pass(N, ._16384)
