@@ -218,8 +218,6 @@ void sort_1_to_1024() {
     s_partially_sorted2[(lindex^32)] = sorted1;
     barrier();
 
-    T temp = sorted1;
-
     sorted2 = s_partially_sorted2[(lindex^(0*32)^(1*128))];
     sorted3 = s_partially_sorted2[(lindex^(1*32)^(1*128))];
     sorted4 = s_partially_sorted2[(lindex^(0*32)^(0*128)^511)];
@@ -250,25 +248,31 @@ void sort_1_to_1024() {
 
     sorted0 = finalize_wave(sorted0);
     sorted1 = finalize_wave(sorted1);
-/*
 
     /// sort1024
     s_partially_sorted2[(lindex)] = sorted0;
+    s_partially_sorted2[(lindex^32)] = sorted1;
     barrier();
 
-    sorted1 = s_partially_sorted2[(lindex^(1*256))];
-    sorted2 = s_partially_sorted2[(lindex^(0*256)^1023)];
-    sorted3 = s_partially_sorted2[(lindex^(1*256)^1023)];
+    sorted2 = s_partially_sorted2[(lindex^(0*32)^(1*256))];
+    sorted3 = s_partially_sorted2[(lindex^(1*32)^(1*256))];
+    sorted4 = s_partially_sorted2[(lindex^(0*32)^(0*256)^1023)];
+    sorted5 = s_partially_sorted2[(lindex^(1*32)^(0*256)^1023)];
+    sorted6 = s_partially_sorted2[(lindex^(0*32)^(1*256)^1023)];
+    sorted7 = s_partially_sorted2[(lindex^(1*32)^(1*256)^1023)];
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex&512) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex&512) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted4, (lindex&512) != 0); 
+    sorted1 = compare_and_select(sorted1, sorted5, (lindex&512) != 0); 
+    sorted2 = compare_and_select(sorted2, sorted6, (lindex&512) != 0); 
+    sorted3 = compare_and_select(sorted3, sorted7, (lindex&512) != 0); 
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&256) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex&256) != 0); 
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex&256) != 0); 
 
     s_partially_sorted[(lindex)] = sorted0;
+    s_partially_sorted[(lindex^32)] = sorted1;
     barrier();
 
-    sorted1 = s_partially_sorted[(lindex^(1*32))];
     sorted2 = s_partially_sorted[(lindex^(2*32))];
     sorted3 = s_partially_sorted[(lindex^(3*32))];
     sorted4 = s_partially_sorted[(lindex^(0*32)^128)];
@@ -284,9 +288,11 @@ void sort_1_to_1024() {
     sorted0 = compare_and_select(sorted0, sorted2, (lindex&64) != 0); 
     sorted1 = compare_and_select(sorted1, sorted3, (lindex&64) != 0); 
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&32) != 0); 
+    min_max(sorted0, sorted1);
 
     sorted0 = finalize_wave(sorted0);
+    sorted1 = finalize_wave(sorted1);
+/*
 */
     b_values_out[k1] = sorted0; 
     b_values_out[k2] = sorted1; 
