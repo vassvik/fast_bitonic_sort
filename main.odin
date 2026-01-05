@@ -24,28 +24,28 @@ Program :: u32
 
 
 Bitonic_Sorting_Stages :: enum u32 {
-	_1024,
-	_2048,
-	_4096,
-	_8192,
-	_16384,
-	//_32768,
-	_32768_1,
-	_32768_2,
-	//_65536,
-	_65536_1,
-	_65536_2,
-	//_131072,
-	_131072_1,
-	_131072_2,
-	//_262144,
-	_262144_1,
-	_262144_2
+	_1024 = 1024,
+	_2048 = 2048,
+	_4096 = 4096,
+	_8192 = 8192,
+	_16384 = 16384,
+	//_32768 = 32768,
+	_32768_1 = 32768+1,
+	_32768_2 = 32768+2,
+	//_65536 = 65536,
+	_65536_1 = 65536+1,
+	_65536_2 = 65536+2,
+	//_131072 = 131072,
+	_131072_1 = 131072+1,
+	_131072_2 = 131072+2,
+	//_262144 = 262144,
+	_262144_1 = 262144+1,
+	_262144_2 = 262144+2,
 }
 
 
-bitonic_sort_programs: [Bitonic_Sorting_Stages]Program
-bitonic_sort2_programs: [Bitonic_Sorting_Stages]Program
+bitonic_sort_programs: #sparse [Bitonic_Sorting_Stages]Program
+bitonic_sort2_programs: #sparse [Bitonic_Sorting_Stages]Program
 
 bitonic_data: [2]u32
 
@@ -140,7 +140,11 @@ main :: proc() {
     N := u32(256*1024)
     step := 0
     outer: 
-    for N := u32(1024); N <= 16384 + 0*256*1024; N *= 2 {
+    //for N := u32(1024); N <= 32768 + 0*256*1024; N *= 2 {
+    for stage in Bitonic_Sorting_Stages {
+    	if stage > ._32768_2 do continue
+    	N := (u32(stage)/1024) * 1024
+
     	fmt.println("N =", N)
 	    for M := u32(0); M < 1 + 0*bits.log2(N); M += 1 {
 	    	fmt.println("M =", M)
@@ -245,7 +249,8 @@ main :: proc() {
 				    }
 				    {
 		        		GL_LABEL_BLOCK("Sort")	
-						block_query(fmt.tprintf("Sort_N%d_%d", N, M), step)
+						//block_query(fmt.tprintf("Sort_N%d_%d", N, M), step)
+						block_query(fmt.tprintf("Sort_N%d%v", N, stage), step)
 
 						if false {
 							for i in u32(0)..<u32(1+M) {
@@ -279,11 +284,11 @@ main :: proc() {
 								//fmt.println()
 							}
 						} else if false {
-							if N >   0*1024 do sort_pass(N, ._1024)
-							if N >   1*1024 do sort_pass(N, ._2048)
-							if N >   2*1024 do sort_pass(N, ._4096)
-							if N >   4*1024 do sort_pass(N, ._8192)
-							if N >   8*1024 do sort_pass(N, ._16384)
+							if stage >= ._1024 do sort_pass(N, ._1024)
+							if stage >= ._2048 do sort_pass(N, ._2048)
+							if stage >= ._4096 do sort_pass(N, ._4096)
+							if stage >= ._8192 do sort_pass(N, ._8192)
+							if stage >= ._16384 do sort_pass(N, ._16384)
 							//if N >  16*1024 do sort_pass(N, ._32768)
 							if N >  16*1024 do sort_pass(N, ._32768_1)
 							if N >  16*1024 do sort_pass(N, ._32768_2)
@@ -297,11 +302,11 @@ main :: proc() {
 							if N > 128*1024 do sort_pass(N, ._262144_1)
 							if N > 128*1024 do sort_pass(N, ._262144_2)
 						} else {
-							if N >   0*1024 do sort2_pass(N, 2, ._1024)
-							if N >   1*1024 do sort2_pass(N, 1, ._2048)
-							if N >   2*1024 do sort2_pass(N, 1, ._4096)
-							if N >   4*1024 do sort2_pass(N, 1, ._8192)
-							if N >   8*1024 do sort2_pass(N, 1, ._16384)
+							if stage >= ._1024 do sort2_pass(N, 2, ._1024)
+							if stage >= ._2048 do sort2_pass(N, 1, ._2048)
+							if stage >= ._4096 do sort2_pass(N, 1, ._4096)
+							if stage >= ._8192 do sort2_pass(N, 1, ._8192)
+							if stage >= ._16384 do sort2_pass(N, 1, ._16384)
 							////if N >  16*1024 do sort2_pass(N, ._32768)
 							//if N >  16*1024 do sort2_pass(N, ._32768_1)
 							//if N >  16*1024 do sort2_pass(N, ._32768_2)
