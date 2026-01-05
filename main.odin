@@ -142,7 +142,7 @@ main :: proc() {
     outer: 
     //for N := u32(1024); N <= 32768 + 0*256*1024; N *= 2 {
     for stage in Bitonic_Sorting_Stages {
-    	if stage > ._32768_2 do continue
+    	if stage > ._65536_2 do continue
     	N := (u32(stage)/1024) * 1024
 
     	fmt.println("N =", N)
@@ -293,8 +293,8 @@ main :: proc() {
 							if stage >= ._32768_1 do sort_pass(N, ._32768_1)
 							if stage >= ._32768_2 do sort_pass(N, ._32768_2)
 							//if N >  32*1024 do sort_pass(N, ._65536)
-							if N >  32*1024 do sort_pass(N, ._65536_1)
-							if N >  32*1024 do sort_pass(N, ._65536_2)
+							if stage >= ._65536_1 do sort_pass(N, ._65536_1)
+							if stage >= ._65536_2 do sort_pass(N, ._65536_2)
 							//if N >  64*1024 do sort_pass(N, ._131072)
 							if N >  64*1024 do sort_pass(N, ._131072_1)
 							if N >  64*1024 do sort_pass(N, ._131072_2)
@@ -311,8 +311,8 @@ main :: proc() {
 							if stage >= ._32768_1 do sort2_pass(N, 2, ._32768_1)
 							if stage >= ._32768_2 do sort2_pass(N, 1, ._32768_2)
 							////if N >  32*1024 do sort2_pass(N, ._65536)
-							//if N >  32*1024 do sort2_pass(N, ._65536_1)
-							//if N >  32*1024 do sort2_pass(N, ._65536_2)
+							if stage >= ._65536_1 do sort2_pass(N, 2, ._65536_1)
+							if stage >= ._65536_2 do sort2_pass(N, 1, ._65536_2)
 							////if N >  64*1024 do sort2_pass(N, ._131072)
 							//if N >  64*1024 do sort2_pass(N, ._131072_1)
 							//if N >  64*1024 do sort2_pass(N, ._131072_2)
