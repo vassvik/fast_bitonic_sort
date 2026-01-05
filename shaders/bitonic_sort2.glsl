@@ -431,37 +431,37 @@ void sort_16384_to_32768() {
 
 void sort_16384_to_32768_1() {
     uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
+    uint gid = 512*gl_WorkGroupID.x + lindex;
+    gid = gid + (gid & ~4095);
 
     T sorted[8];
-    for (uint i = 0; i < 4; i++) {
-        uint idx = gid^(i*4096);
-        sorted[i] = b_values_in[idx];
-        sorted[4+i] = b_values_in[idx^32767];
-    }
+    for (uint i = 0; i < 4; i++) sorted[i] = b_values_in[gid^(i*4096)];
+    for (uint i = 0; i < 4; i++) sorted[4+i] = b_values_in[gid^(i*4096)^32767];
 
     for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&16384) != 0); 
     for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&8192) != 0); 
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&4096) != 0); 
+    min_max(sorted[0], sorted[1]);
 
     b_values_out[gid] = sorted[0];
+    b_values_out[gid^4096] = sorted[1];
 } 
 
 void sort_16384_to_32768_2() {
     uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
+    uint gid = 512 * gl_WorkGroupID.x + lindex;
 
-    T sorted[4];
-    for (uint i = 0; i < 2; i++) {
-        uint idx = gid^(i*1024);
+    T sorted[8];
+    for (uint i = 0; i < 4; i++) {
+        uint idx = gid^(i*512);
         sorted[i] = b_values_in[idx];
-        sorted[2+i] = b_values_in[idx^2048];
+        sorted[4+i] = b_values_in[idx^2048];
     }
 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
+    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&2048) != 0);  // 4096
+    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&1024) != 0);  // 4096
+    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&512) != 0);  // 2048
 
-    b_values_out[gid] = finalize_1024(lindex, sorted[0]);
+    b_values_out[gid] = finalize_512(lindex, sorted[0]);
 } 
 
 void sort_32768_to_65536() {
