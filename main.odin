@@ -338,7 +338,7 @@ main :: proc() {
 		    			block_query("Verify", step)
 				        gl.DispatchCompute(N / 512, 1, 1)
 		    		}
-		    		{	
+		    		if stage != ._32768_1 && stage != ._65536_1 {	
 		        		//GL_LABEL_BLOCK("Download Result")	
 
 				    	is_sorted: [32]b32
