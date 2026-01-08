@@ -29,18 +29,18 @@ Bitonic_Sorting_Stages :: enum u32 {
 	_4096 = 4096,
 	_8192 = 8192,
 	_16384 = 16384,
-	//_32768 = 32768,
-	_32768_1 = 32768+1,
-	_32768_2 = 32768+2,
-	//_65536 = 65536,
-	_65536_1 = 65536+1,
-	_65536_2 = 65536+2,
-	//_131072 = 131072,
-	_131072_1 = 131072+1,
-	_131072_2 = 131072+2,
-	//_262144 = 262144,
-	_262144_1 = 262144+1,
-	_262144_2 = 262144+2,
+	_32768 = 32768,
+	//_32768_1 = 32768+1,
+	//_32768_2 = 32768+2,
+	_65536 = 65536,
+	//_65536_1 = 65536+1,
+	//_65536_2 = 65536+2,
+	_131072 = 131072,
+	//_131072_1 = 131072+1,
+	//_131072_2 = 131072+2,
+	_262144 = 262144,
+	//_262144_1 = 262144+1,
+	//_262144_2 = 262144+2,
 }
 
 
@@ -142,7 +142,7 @@ main :: proc() {
     outer: 
     //for N := u32(1024); N <= 32768 + 0*256*1024; N *= 2 {
     for stage in Bitonic_Sorting_Stages {
-    	if stage > ._262144_2 do continue
+    	//if stage > ._262144_2 do continue
     	N := (u32(stage)/1024) * 1024
 
     	fmt.println("N =", N)
@@ -289,18 +289,18 @@ main :: proc() {
 							if stage >= ._4096 do sort_pass(N, ._4096)
 							if stage >= ._8192 do sort_pass(N, ._8192)
 							if stage >= ._16384 do sort_pass(N, ._16384)
-							//if N >  16*1024 do sort_pass(N, ._32768)
-							if stage >= ._32768_1 do sort_pass(N, ._32768_1)
-							if stage >= ._32768_2 do sort_pass(N, ._32768_2)
-							//if N >  32*1024 do sort_pass(N, ._65536)
-							if stage >= ._65536_1 do sort_pass(N, ._65536_1)
-							if stage >= ._65536_2 do sort_pass(N, ._65536_2)
-							//if N >  64*1024 do sort_pass(N, ._131072)
-							if stage >= ._131072_1 do sort_pass(N, ._131072_1)
-							if stage >= ._131072_2 do sort_pass(N, ._131072_2)
-							//if N > 128*1024 do sort_pass(N, ._262144)
-							if stage >= ._262144_1 do sort_pass(N, ._262144_1)
-							if stage >= ._262144_2 do sort_pass(N, ._262144_2)
+							if stage >= ._32768 do sort_pass(N, ._32768)
+							//if stage >= ._32768_1 do sort_pass(N, ._32768_1)
+							//if stage >= ._32768_2 do sort_pass(N, ._32768_2)
+							if stage >= ._65536 do sort_pass(N, ._65536)
+							//if stage >= ._65536_1 do sort_pass(N, ._65536_1)
+							//if stage >= ._65536_2 do sort_pass(N, ._65536_2)
+							if stage >= ._131072 do sort_pass(N, ._131072)
+							//if stage >= ._131072_1 do sort_pass(N, ._131072_1)
+							//if stage >= ._131072_2 do sort_pass(N, ._131072_2)
+							if stage >= ._262144 do sort_pass(N, ._262144)
+							//if stage >= ._262144_1 do sort_pass(N, ._262144_1)
+							//if stage >= ._262144_2 do sort_pass(N, ._262144_2)
 						} else {
 							if stage >= ._1024 do sort2_pass(N, 2, ._1024)
 							if stage >= ._2048 do sort2_pass(N, 1, ._2048)
@@ -308,11 +308,11 @@ main :: proc() {
 							if stage >= ._8192 do sort2_pass(N, 1, ._8192)
 							if stage >= ._16384 do sort2_pass(N, 1, ._16384)
 							////if N >  16*1024 do sort2_pass(N, ._32768)
-							if stage >= ._32768_1 do sort2_pass(N, 2, ._32768_1)
-							if stage >= ._32768_2 do sort2_pass(N, 1, ._32768_2)
+							//if stage >= ._32768_1 do sort2_pass(N, 2, ._32768_1)
+							//if stage >= ._32768_2 do sort2_pass(N, 1, ._32768_2)
 							////if N >  32*1024 do sort2_pass(N, ._65536)
-							if stage >= ._65536_1 do sort2_pass(N, 2, ._65536_1)
-							if stage >= ._65536_2 do sort2_pass(N, 1, ._65536_2)
+							//if stage >= ._65536_1 do sort2_pass(N, 2, ._65536_1)
+							//if stage >= ._65536_2 do sort2_pass(N, 1, ._65536_2)
 							////if N >  64*1024 do sort2_pass(N, ._131072)
 							//if N >  64*1024 do sort2_pass(N, ._131072_1)
 							//if N >  64*1024 do sort2_pass(N, ._131072_2)
@@ -338,7 +338,8 @@ main :: proc() {
 		    			block_query("Verify", step)
 				        gl.DispatchCompute(N / 512, 1, 1)
 		    		}
-		    		if stage != ._32768_1 && stage != ._65536_1 && stage != ._131072_1 && stage != ._262144_1 {	
+		    		//if stage != ._32768_1 && stage != ._65536_1 && stage != ._131072_1 && stage != ._262144_1 
+		    		{	
 		        		//GL_LABEL_BLOCK("Download Result")	
 
 				    	is_sorted: [32]b32
