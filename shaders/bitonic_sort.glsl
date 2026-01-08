@@ -16,6 +16,7 @@ layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in ;
 #define T uint
 
 #define USE<stage>
+#define FOR_WAVE32
 
 T compare_and_select(T a, T b, bool select_max) {
     //return mix(min(a, b), max(a, b), select_max);
@@ -24,126 +25,106 @@ T compare_and_select(T a, T b, bool select_max) {
     return select_max ? max(a, b) : min(a, b);
 }
 
-#define sid gl_SubgroupInvocationID 
+#define sid gl_SubgroupInvocationID
 #define shfl(v, i) subgroupShuffleXor(v, i)
 
 T sort_wave(T value) {
     // layer 0
-    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
 
     // layer 1
-    value = compare_and_select(value, shfl(value, 3),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, sid^3),  sid > (sid^3));
+    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
 
     // layer 2
-    value = compare_and_select(value, shfl(value, 7),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, sid^7),  sid > (sid^7));
+    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
+    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
 
     // layer 3
-    value = compare_and_select(value, shfl(value, 15), (sid&8) != 0);
-    value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, sid^15), sid > (sid^15));
+    value = compare_and_select(value, shfl(value, sid^4),  sid > (sid^4));
+    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
+    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
 
     // layer 4
-    value = compare_and_select(value, shfl(value, 31), (sid&16) != 0);
-    value = compare_and_select(value, shfl(value, 8),  (sid&8) != 0);
-    value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, sid^31), sid > (sid^31));
+    value = compare_and_select(value, shfl(value, sid^8),  sid > (sid^8));
+    value = compare_and_select(value, shfl(value, sid^4),  sid > (sid^4));
+    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
+    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+
+#if defined(FOR_WAVE64)
+    // layer 5
+    value = compare_and_select(value, shfl(value, sid^63), sid > (sid^63));
+    value = compare_and_select(value, shfl(value, sid^16), sid > (sid^16));
+    value = compare_and_select(value, shfl(value, sid^8),  sid > (sid^8));
+    value = compare_and_select(value, shfl(value, sid^4),  sid > (sid^4));
+    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
+    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+#endif
 
     return value;
 }
 
 T finalize_wave(T value) {
-    value = compare_and_select(value, shfl(value, 16), (sid&16) != 0);
-    value = compare_and_select(value, shfl(value, 8),  (sid&8) != 0);
-    value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
+#if defined(FOR_WAVE64)
+    value = compare_and_select(value, shfl(value, sid^32), sid > (sid^32));
+#endif
+    value = compare_and_select(value, shfl(value, sid^16), sid > (sid^16));
+    value = compare_and_select(value, shfl(value, sid^8),  sid > (sid^8));
+    value = compare_and_select(value, shfl(value, sid^4),  sid > (sid^4));
+    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
+    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
 
     return value;
 }
 
-shared T s_partially_sorted[1024];
-shared T s_partially_sorted2[1024];
-
-T finalize_512(uint lindex, T sorted0) {
-    T sorted[4];
-    sorted[0] = sorted0;
-
-    /// sort512
-    s_partially_sorted[lindex] = sorted[0];
-    barrier();
-
-    sorted[1] = s_partially_sorted[lindex^(1*128)];
-    sorted[2] = s_partially_sorted[lindex^(2*128)];
-    sorted[3] = s_partially_sorted[lindex^(3*128)];
-
-    sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&256) != 0);
-    sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&256) != 0);
-
-    sorted[0] = compare_and_select(sorted[0], sorted[1], (lindex&128) != 0); 
-
-    s_partially_sorted2[(lindex)] = sorted[0];
-    barrier();
-
-    sorted[1] = s_partially_sorted2[lindex^(1*32)];
-    sorted[2] = s_partially_sorted2[lindex^(2*32)];
-    sorted[3] = s_partially_sorted2[lindex^(3*32)];
-
-    sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&64) != 0); 
-    sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&64) != 0); 
-
-    sorted[0] = compare_and_select(sorted[0], sorted[1], (lindex&32) != 0); 
-
-    sorted[0] = finalize_wave(sorted[0]);
-
-    return sorted[0];
-}
+shared T s_partially_sorted[2*1024];
 
 T finalize_1024(uint lindex, T sorted0) {
-    T sorted[8];
-    sorted[0] = sorted0;
-
     /// sort1024
-    s_partially_sorted[lindex] = sorted[0];
+    s_partially_sorted[lindex] = sorted0;
+    barrier();
+    T sorted1 = s_partially_sorted[lindex^(1*128)];
+    T sorted2 = s_partially_sorted[lindex^(2*128)];
+    T sorted3 = s_partially_sorted[lindex^(3*128)];
+    T sorted4 = s_partially_sorted[lindex^(4*128)];
+    T sorted5 = s_partially_sorted[lindex^(5*128)];
+    T sorted6 = s_partially_sorted[lindex^(6*128)];
+    T sorted7 = s_partially_sorted[lindex^(7*128)];
+
+    sorted0 = compare_and_select(sorted0, sorted4, (lindex^(0*128)) > (lindex^(4*128)));
+    sorted1 = compare_and_select(sorted1, sorted5, (lindex^(1*128)) > (lindex^(5*128)));
+    sorted2 = compare_and_select(sorted2, sorted6, (lindex^(2*128)) > (lindex^(6*128)));
+    sorted3 = compare_and_select(sorted3, sorted7, (lindex^(3*128)) > (lindex^(7*128)));
+
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*128)) > (lindex^(2*128)));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*128)) > (lindex^(3*128)));
+
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*128)) > (lindex^(1*128)));
+
+    lindex = lindex^1024;
+    s_partially_sorted[(lindex)] = sorted0;
     barrier();
 
-    sorted[1] = s_partially_sorted[lindex^(1*128)];
-    sorted[2] = s_partially_sorted[lindex^(2*128)];
-    sorted[3] = s_partially_sorted[lindex^(3*128)];
-    sorted[4] = s_partially_sorted[lindex^(4*128)];
-    sorted[5] = s_partially_sorted[lindex^(5*128)];
-    sorted[6] = s_partially_sorted[lindex^(6*128)];
-    sorted[7] = s_partially_sorted[lindex^(7*128)];
+#if defined(FOR_WAVE32)
+    sorted1 = s_partially_sorted[lindex^(1*32)];
+    sorted2 = s_partially_sorted[lindex^(2*32)];
+    sorted3 = s_partially_sorted[lindex^(3*32)];
 
-    sorted[0] = compare_and_select(sorted[0], sorted[4], (lindex&512) != 0);
-    sorted[1] = compare_and_select(sorted[1], sorted[5], (lindex&512) != 0);
-    sorted[2] = compare_and_select(sorted[2], sorted[6], (lindex&512) != 0);
-    sorted[3] = compare_and_select(sorted[3], sorted[7], (lindex&512) != 0);
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*32)) > (lindex^(2*32)));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(3*32)));
 
-    sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&256) != 0);
-    sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&256) != 0);
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
+#else
+    sorted1 = s_partially_sorted[lindex^(1*64)];
 
-    sorted[0] = compare_and_select(sorted[0], sorted[1], (lindex&128) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*64)) > (lindex^(1*64)));
+#endif
+    sorted0 = finalize_wave(sorted0);
 
-    s_partially_sorted2[(lindex)] = sorted[0];
-    barrier();
-
-    sorted[1] = s_partially_sorted2[lindex^(1*32)];
-    sorted[2] = s_partially_sorted2[lindex^(2*32)];
-    sorted[3] = s_partially_sorted2[lindex^(3*32)];
-
-    sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&64) != 0); 
-    sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&64) != 0); 
-
-    sorted[0] = compare_and_select(sorted[0], sorted[1], (lindex&32) != 0); 
-
-    sorted[0] = finalize_wave(sorted[0]);
-
-    return sorted[0];
+    return sorted0;
 }
 
 void sort_1_to_1024() {
@@ -153,38 +134,64 @@ void sort_1_to_1024() {
     T sorted1, sorted2, sorted3, sorted4, sorted5, sorted6, sorted7;
     T sorted0 = b_values_in[gid];
 
+#if defined(FOR_WAVE32)
     /// sort32
     sorted0 = sort_wave(sorted0);
 
     /// sort64
+    lindex = lindex^1024;
+    s_partially_sorted[(lindex)] = sorted0;
+    barrier();
+    sorted1 = s_partially_sorted[(lindex^63)];
+    sorted0 = compare_and_select(sorted0, sorted1, lindex > (lindex^63));
+
+    sorted0 = finalize_wave(sorted0);
+#else
+    /// sort64
+    sorted0 = sort_wave(sorted0);
+#endif
+
+    /// sort128
+    lindex = lindex^1024;
     s_partially_sorted[(lindex)] = sorted0;
     barrier();
 
-    sorted1 = s_partially_sorted[(lindex^63)];
-    
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&32) != 0); 
+#if defined(FOR_WAVE32)
+    sorted1 = s_partially_sorted[(lindex^(1*32))];
+    sorted2 = s_partially_sorted[(lindex^(2*32))];
+    sorted3 = s_partially_sorted[(lindex^(3*32))];
+    sorted4 = s_partially_sorted[(lindex^(0*32)^127)];
+    sorted5 = s_partially_sorted[(lindex^(1*32)^127)];
+    sorted6 = s_partially_sorted[(lindex^(2*32)^127)];
+    sorted7 = s_partially_sorted[(lindex^(3*32)^127)];
 
-    sorted0 = finalize_wave(sorted0);
+    sorted0 = compare_and_select(sorted0, sorted4, (lindex^(0*32)) > (lindex^(0*32)^127));
+    sorted1 = compare_and_select(sorted1, sorted5, (lindex^(1*32)) > (lindex^(1*32)^127));
+    sorted2 = compare_and_select(sorted2, sorted6, (lindex^(2*32)) > (lindex^(2*32)^127));
+    sorted3 = compare_and_select(sorted3, sorted7, (lindex^(3*32)) > (lindex^(3*32)^127));
 
-    /// sort128
-    s_partially_sorted2[(lindex)] = sorted0;
-    barrier();
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*32)) > (lindex^(2*32)));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(3*32)));
 
-    sorted1 = s_partially_sorted2[(lindex^(1*32))];
-    sorted2 = s_partially_sorted2[(lindex^(0*32)^127)];
-    sorted3 = s_partially_sorted2[(lindex^(1*32)^127)];
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
+#else
+    sorted1 = s_partially_sorted[(lindex^(1*64))];
+    sorted2 = s_partially_sorted[(lindex^(0*64)^127)];
+    sorted3 = s_partially_sorted[(lindex^(1*64)^127)];
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex&64) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex&64) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*64)) > (lindex^(0*64)^127));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*64)) > (lindex^(1*64)^127));
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&32) != 0);
-
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*64)) > (lindex^(1*64)));
+#endif
     sorted0 = finalize_wave(sorted0);
 
     /// sort256
+    lindex = lindex^1024;
     s_partially_sorted[(lindex)] = sorted0;
     barrier();
 
+#if defined(FOR_WAVE32)
     sorted1 = s_partially_sorted[(lindex^(1*32))];
     sorted2 = s_partially_sorted[(lindex^(2*32))];
     sorted3 = s_partially_sorted[(lindex^(3*32))];
@@ -193,61 +200,85 @@ void sort_1_to_1024() {
     sorted6 = s_partially_sorted[(lindex^(2*32)^255)];
     sorted7 = s_partially_sorted[(lindex^(3*32)^255)];
 
-    sorted0 = compare_and_select(sorted0, sorted4, (lindex&128) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted5, (lindex&128) != 0); 
-    sorted2 = compare_and_select(sorted2, sorted6, (lindex&128) != 0); 
-    sorted3 = compare_and_select(sorted3, sorted7, (lindex&128) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted4, (lindex^(0*32)) > (lindex^(0*32)^255));
+    sorted1 = compare_and_select(sorted1, sorted5, (lindex^(1*32)) > (lindex^(1*32)^255));
+    sorted2 = compare_and_select(sorted2, sorted6, (lindex^(2*32)) > (lindex^(2*32)^255));
+    sorted3 = compare_and_select(sorted3, sorted7, (lindex^(3*32)) > (lindex^(3*32)^255));
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex&64) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex&64) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*32)) > (lindex^(2*32)));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(3*32)));
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&32) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
 
     sorted0 = finalize_wave(sorted0);
+#else 
+    sorted1 = s_partially_sorted[(lindex^(1*64))];
+    sorted2 = s_partially_sorted[(lindex^(0*64)^255)];
+    sorted3 = s_partially_sorted[(lindex^(1*64)^255)];
+
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*64)) > (lindex^(0*64)^255));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*64)) > (lindex^(1*64)^255));
+
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*64)) > (lindex^(1*64)));
+
+    sorted0 = finalize_wave(sorted0);
+#endif
 
     /// sort512
-    s_partially_sorted2[(lindex)] = sorted0;
-    barrier();
-
-    sorted1 = s_partially_sorted2[(lindex^(1*128))];
-    sorted2 = s_partially_sorted2[(lindex^(0*128)^511)];
-    sorted3 = s_partially_sorted2[(lindex^(1*128)^511)];
-
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex&256) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex&256) != 0); 
-
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&128) != 0); 
-
+    lindex = lindex^1024;
     s_partially_sorted[(lindex)] = sorted0;
     barrier();
 
+    sorted1 = s_partially_sorted[(lindex^(1*128))];
+    sorted2 = s_partially_sorted[(lindex^(0*128)^511)];
+    sorted3 = s_partially_sorted[(lindex^(1*128)^511)];
+
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*128)) > (lindex^(0*128)^511));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*128)) > (lindex^(1*128)^511));
+
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*128)) > (lindex^(1*128)));
+
+    lindex = lindex^1024;
+    s_partially_sorted[(lindex)] = sorted0;
+    barrier();
+
+#if defined(FOR_WAVE32)
     sorted1 = s_partially_sorted[(lindex^(1*32))];
     sorted2 = s_partially_sorted[(lindex^(0*32)^64)];
     sorted3 = s_partially_sorted[(lindex^(1*32)^64)];
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex&64) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex&64) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*32)) > (lindex^(0*32)^64));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(1*32)^64));
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&32) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
 
     sorted0 = finalize_wave(sorted0);
+#else 
+    sorted1 = s_partially_sorted[(lindex^(0*64)^64)];
+
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*64)) > (lindex^(0*64)^64));
+
+    sorted0 = finalize_wave(sorted0);
+#endif
 
     /// sort1024
-    s_partially_sorted2[(lindex)] = sorted0;
+    lindex = lindex^1024;
+    s_partially_sorted[(lindex)] = sorted0;
     barrier();
+    sorted1 = s_partially_sorted[(lindex^(1*256))];
+    sorted2 = s_partially_sorted[(lindex^(0*256)^1023)];
+    sorted3 = s_partially_sorted[(lindex^(1*256)^1023)];
 
-    sorted1 = s_partially_sorted2[(lindex^(1*256))];
-    sorted2 = s_partially_sorted2[(lindex^(0*256)^1023)];
-    sorted3 = s_partially_sorted2[(lindex^(1*256)^1023)];
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*256)) > (lindex^(0*256)^1023));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*256)) > (lindex^(1*256)^1023));
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex&512) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex&512) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*256)) > (lindex^(1*256)));
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&256) != 0); 
-
+    lindex = lindex^1024;
     s_partially_sorted[(lindex)] = sorted0;
     barrier();
 
+#if defined(FOR_WAVE32)
     sorted1 = s_partially_sorted[(lindex^(1*32))];
     sorted2 = s_partially_sorted[(lindex^(2*32))];
     sorted3 = s_partially_sorted[(lindex^(3*32))];
@@ -256,18 +287,28 @@ void sort_1_to_1024() {
     sorted6 = s_partially_sorted[(lindex^(2*32)^128)];
     sorted7 = s_partially_sorted[(lindex^(3*32)^128)];
 
-    sorted0 = compare_and_select(sorted0, sorted4, (lindex&128) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted5, (lindex&128) != 0); 
-    sorted2 = compare_and_select(sorted2, sorted6, (lindex&128) != 0); 
-    sorted3 = compare_and_select(sorted3, sorted7, (lindex&128) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted4, (lindex^(0*32)) > (lindex^(0*32)^128));
+    sorted1 = compare_and_select(sorted1, sorted5, (lindex^(1*32)) > (lindex^(1*32)^128));
+    sorted2 = compare_and_select(sorted2, sorted6, (lindex^(2*32)) > (lindex^(2*32)^128));
+    sorted3 = compare_and_select(sorted3, sorted7, (lindex^(3*32)) > (lindex^(3*32)^128));
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex&64) != 0); 
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex&64) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*32)) > (lindex^(2*32)));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(3*32)));
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex&32) != 0); 
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
+#else
+    sorted1 = s_partially_sorted[(lindex^(1*64))];
+    sorted2 = s_partially_sorted[(lindex^(0*64)^128)];
+    sorted3 = s_partially_sorted[(lindex^(1*64)^128)];
 
+    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*64)) > (lindex^(0*64)^128));
+    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*64)) > (lindex^(1*64)^128));
+
+    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*64)) > (lindex^(1*64)));
+#endif
     sorted0 = finalize_wave(sorted0);
 
+    ///
     b_values_out[gid] = sorted0; 
 } 
 
@@ -275,32 +316,33 @@ void sort_1024_to_2048() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
-    T sorted[4];
-    for (uint i = 0; i < 2; i++) {
-        uint idx = gid^(i*512);
-        sorted[i] = b_values_in[idx];
-        sorted[i+2] = b_values_in[idx^2047];
+    uint idx[2];
+    for (int i = 0; i < 1; i++) {
+        idx[i]   = gid^(i*1024);
+        idx[1+i] = idx[i]^(2*1024-1);
     }
 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&1024) != 0);
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&512) != 0);
+    T sorted[2];
+    for (int i = 0; i < 2; i++) sorted[i] = b_values_in[idx[i]];
+    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], idx[i] > idx[i+1]); // 2048
 
-    b_values_out[gid] = finalize_512(lindex, sorted[0]);
+    b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
 void sort_2048_to_4096() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
-    T sorted[4];
-    for (uint i = 0; i < 2; i++) {
-        uint idx = gid^(i*1024);
-        sorted[i] = b_values_in[idx];
-        sorted[i+2] = b_values_in[idx^4095];
+    uint idx[4];
+    for (int i = 0; i < 2; i++) {
+        idx[i]   = gid^(i*1024);
+        idx[2+i] = idx[i]^(4*1024-1);
     }
 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);
+    T sorted[4];
+    for (int i = 0; i < 4; i++) sorted[i] = b_values_in[idx[i]];
+    for (int i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], idx[i] > idx[i+2]); // 4096
+    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], idx[i] > idx[i+1]); // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -309,16 +351,17 @@ void sort_4096_to_8192() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
-    T sorted[8];
-    for (uint i = 0; i < 4; i++) {
-        uint idx = gid^(i*1024);
-        sorted[i] = b_values_in[idx];
-        sorted[i+4] = b_values_in[idx^8191];
+    uint idx[8];
+    for (int i = 0; i < 4; i++) {
+        idx[i]   = gid^(i*1024);
+        idx[4+i] = idx[i]^(8*1024-1);
     }
 
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0);
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);
+    T sorted[8];
+    for (int i = 0; i < 8; i++) sorted[i] = b_values_in[idx[i]];
+    for (int i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], idx[i] > idx[i+4]); // 8192
+    for (int i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], idx[i] > idx[i+2]); // 4096
+    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], idx[i] > idx[i+1]); // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -327,17 +370,18 @@ void sort_8192_to_16384() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
-    T sorted[16];
-    for (uint i = 0; i < 8; i++) {
-        uint idx = gid^(i*1024);
-        sorted[i] = b_values_in[idx];
-        sorted[i+8] = b_values_in[idx^16383];
+    uint idx[16];
+    for (int i = 0; i < 8; i++) {
+        idx[i]   = gid^(i*1024);
+        idx[8+i] = idx[i]^(16*1024-1);
     }
 
-    for (uint i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8], (gid&8192) != 0);
-    for (uint i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0);
-    for (uint i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);
-    for (uint i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);
+    T sorted[16];
+    for (int i = 0; i < 16; i++) sorted[i] = b_values_in[idx[i]];
+    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8], idx[i] > idx[i+8]); // 16384
+    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], idx[i] > idx[i+4]); // 8192
+    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], idx[i] > idx[i+2]); // 4096
+    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], idx[i] > idx[i+1]); // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -346,53 +390,19 @@ void sort_16384_to_32768() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
+    uint idx[32];
+    for (int i = 0; i < 16; i++) {
+        idx[i]    = gid^(i*1024);
+        idx[16+i] = idx[i]^(32*1024-1);
+    }
+
     T sorted[32];
-    for (uint i = 0; i < 16; i++) {
-        uint idx  = gid^(i*1024);
-        sorted[i] = b_values_in[idx];
-        sorted[i+16] = b_values_in[idx^32767];
-    }
-
-    for (uint i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0);
-    for (uint i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);
-    for (uint i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);
-    for (uint i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);
-    for (uint i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);
-
-    b_values_out[gid] = finalize_1024(lindex, sorted[0]);
-} 
-
-void sort_16384_to_32768_1() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[8];
-    for (uint i = 0; i < 4; i++) {
-        uint idx = gid^(i*4096);
-        sorted[i] = b_values_in[idx];
-        sorted[4+i] = b_values_in[idx^32767];
-    }
-
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&16384) != 0); 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&8192) != 0); 
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&4096) != 0); 
-
-    b_values_out[gid] = sorted[0];
-} 
-
-void sort_16384_to_32768_2() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[4];
-    for (uint i = 0; i < 2; i++) {
-        uint idx = gid^(i*1024);
-        sorted[i] = b_values_in[idx];
-        sorted[2+i] = b_values_in[idx^2048];
-    }
-
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
+    for (int i = 0; i < 32; i++) sorted[i] = b_values_in[idx[i]];
+    for (int i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], idx[i] > idx[i+16]); // 32768
+    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  idx[i] > idx[i+8]);  // 16384
+    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  idx[i] > idx[i+4]);  // 8192
+    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  idx[i] > idx[i+2]);  // 4096
+    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  idx[i] > idx[i+1]);  // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -401,172 +411,23 @@ void sort_32768_to_65536() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
+    uint idx[64];
+    for (int i = 0; i < 32; i++) {
+        idx[i]    = gid^(i*1024);
+        idx[32+i] = idx[i]^(64*1024-1);
+    }
+
     T sorted[64];
-    for (uint i = 0; i < 32; i++) {
-        uint idx = gid^(i*1024);
-        sorted[i] = b_values_in[idx];
-        sorted[i+32] = b_values_in[idx^65535];
-    }
-
-    for (uint i = 0; i < 32; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+32], (gid&32768) != 0);
-    for (uint i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0);
-    for (uint i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);
-    for (uint i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);
-    for (uint i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);
-    for (uint i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);
+    for (int i = 0; i < 64; i++) sorted[i] = b_values_in[idx[i]];
+    for (int i = 0; i < 32; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+32], idx[i] > idx[i+32]); // 65536
+    for (int i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], idx[i] > idx[i+16]); // 32768
+    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  idx[i] > idx[i+8]);  // 16384
+    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  idx[i] > idx[i+4]);  // 8192
+    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  idx[i] > idx[i+2]);  // 4096
+    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  idx[i] > idx[i+1]);  // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
-
-void sort_32768_to_65536_1() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[8];
-    for (uint i = 0; i < 4; i++) {
-        uint idx = gid^(i*8192);
-        sorted[i] = b_values_in[idx];
-        sorted[4+i] = b_values_in[idx^65535];
-    }
-
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&32768) != 0); 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&16384) != 0); 
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&8192) != 0); 
-
-    b_values_out[gid] = sorted[0];
-} 
-
-void sort_32768_to_65536_2() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[8];
-    for (uint i = 0; i < 4; i++) {
-        uint idx = gid^(i*1024);
-        sorted[i] = b_values_in[idx];
-        sorted[4+i] = b_values_in[idx^4096];
-    }
-
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  // 8192
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
-
-    b_values_out[gid] = finalize_1024(lindex, sorted[0]);
-} 
-
-void sort_65536_to_131072() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-
-    T sorted2[16];
-    for (uint j = 0; j < 16; j++) {
-        T sorted[8];
-        for (uint i = 0; i < 4; i++) sorted[i]    = b_values_in[gid^(j*1024)^(i*16384)];
-        for (uint i = 0; i < 4; i++) sorted[4+i] = b_values_in[gid^(j*1024)^(i*16384)^131071];
-
-        for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&65536) != 0); // 131072 
-        for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&32768) != 0); // 65536 
-        for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&16384) != 0); // 32768 
-        sorted2[j] = sorted[0];
-    }
-
-    for (uint i = 0; i < 8;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+8],  (gid&8192) != 0);  // 4096 
-    for (uint i = 0; i < 4;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+4],  (gid&4096) != 0);  // 4096 
-    for (uint i = 0; i < 2;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+2],  (gid&2048) != 0);  // 4096 
-    for (uint i = 0; i < 1;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+1],  (gid&1024) != 0);  // 2048 
-
-    b_values_out[gid] = finalize_1024(lindex, sorted2[0]);
-}
-
-void sort_65536_to_131072_1() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[8];
-    for (uint i = 0; i < 4; i++) sorted[i] = b_values_in[gid^(i*16384)];
-    for (uint i = 0; i < 4; i++) sorted[4+i] = b_values_in[gid^(i*16384)^131071];
-
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&65536) != 0); 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&32768) != 0); 
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&16384) != 0); 
-
-    b_values_out[gid] = sorted[0];
-} 
-
-void sort_65536_to_131072_2() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[16];
-    for (uint i = 0; i < 8; i++) sorted[i] = b_values_in[gid^(i*1024)];
-    for (uint i = 0; i < 8; i++) sorted[8+i] = b_values_in[gid^(i*1024)^8192];
-
-    for (uint i = 0; i < 8; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  // 8192
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  // 8192
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
-
-    b_values_out[gid] = finalize_1024(lindex, sorted[0]);
-} 
-
-void sort_131072_to_262144() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted2[16];
-    for (uint j = 0; j < 16; j++) {
-        T sorted[16];
-        for (uint i = 0; i < 8; i++) sorted[i]    = b_values_in[gid^(j*1024)^(i*16384)];
-        for (uint i = 0; i < 8; i++) sorted[8+i] = b_values_in[gid^(j*1024)^(i*16384)^262144];
-
-        for (uint i = 0; i < 8; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8], (gid&131072) != 0); // 131072 
-        for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&65536) != 0); // 131072 
-        for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&32768) != 0); // 65536 
-        for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&16384) != 0); // 32768 
-        sorted2[j] = sorted[0];
-    }
-
-    for (uint i = 0; i < 8;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+8],  (gid&8192) != 0);  // 4096 
-    for (uint i = 0; i < 4;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+4],  (gid&4096) != 0);  // 4096 
-    for (uint i = 0; i < 2;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+2],  (gid&2048) != 0);  // 4096 
-    for (uint i = 0; i < 1;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+1],  (gid&1024) != 0);  // 2048 
-
-    b_values_out[gid] = finalize_1024(lindex, sorted2[0]);
-}
-
-void sort_131072_to_262144_1() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[16];
-    for (uint i = 0; i < 8; i++) sorted[i] = b_values_in[gid^(i*16384)];
-    for (uint i = 0; i < 8; i++) sorted[8+i] = b_values_in[gid^(i*16384)^262143];
-
-    for (uint i = 0; i < 8; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&131072) != 0); 
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&65536) != 0); 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&32768) != 0); 
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&16384) != 0); 
-
-    b_values_out[gid] = sorted[0];
-} 
-
-void sort_131072_to_262144_2() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[16];
-    for (uint i = 0; i < 8; i++) sorted[i] = b_values_in[gid^(i*1024)];
-    for (uint i = 0; i < 8; i++) sorted[8+i] = b_values_in[gid^(i*1024)^8192];
-
-    for (uint i = 0; i < 8; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  // 8192
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  // 8192
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
-
-    b_values_out[gid] = finalize_1024(lindex, sorted[0]);
-} 
-
 
 void main() {
 #if defined(USE_1024)
@@ -581,27 +442,7 @@ void main() {
     sort_8192_to_16384();
 #elif defined(USE_32768)
     sort_16384_to_32768();
-#elif defined(USE_32768_1)
-    sort_16384_to_32768_1();
-#elif defined(USE_32768_2)
-    sort_16384_to_32768_2();
 #elif defined(USE_65536)
     sort_32768_to_65536();
-#elif defined(USE_65536_1)
-    sort_32768_to_65536_1();
-#elif defined(USE_65536_2)
-    sort_32768_to_65536_2();
-#elif defined(USE_131072)
-    sort_65536_to_131072();
-#elif defined(USE_131072_1)
-    sort_65536_to_131072_1();
-#elif defined(USE_131072_2)
-    sort_65536_to_131072_2();
-#elif defined(USE_262144)
-    sort_131072_to_262144();
-#elif defined(USE_262144_1)
-    sort_131072_to_262144_1();
-#elif defined(USE_262144_2)
-    sort_131072_to_262144_2();
 #endif
 }

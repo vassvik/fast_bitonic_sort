@@ -35,10 +35,10 @@ Bitonic_Sorting_Stages :: enum u32 {
 	_65536 = 65536,
 	//_65536_1 = 65536+1,
 	//_65536_2 = 65536+2,
-	_131072 = 131072,
+	//_131072 = 131072,
 	//_131072_1 = 131072+1,
 	//_131072_2 = 131072+2,
-	_262144 = 262144,
+	//_262144 = 262144,
 	//_262144_1 = 262144+1,
 	//_262144_2 = 262144+2,
 }
@@ -137,7 +137,7 @@ main :: proc() {
 
     init_query_pool()
     
-    N := u32(256*1024)
+    N := u32(64*1024)
     step := 0
     outer: 
     //for N := u32(1024); N <= 32768 + 0*256*1024; N *= 2 {
@@ -295,10 +295,10 @@ main :: proc() {
 							if stage >= ._65536 do sort_pass(N, ._65536)
 							//if stage >= ._65536_1 do sort_pass(N, ._65536_1)
 							//if stage >= ._65536_2 do sort_pass(N, ._65536_2)
-							if stage >= ._131072 do sort_pass(N, ._131072)
+							//if stage >= ._131072 do sort_pass(N, ._131072)
 							//if stage >= ._131072_1 do sort_pass(N, ._131072_1)
 							//if stage >= ._131072_2 do sort_pass(N, ._131072_2)
-							if stage >= ._262144 do sort_pass(N, ._262144)
+							//if stage >= ._262144 do sort_pass(N, ._262144)
 							//if stage >= ._262144_1 do sort_pass(N, ._262144_1)
 							//if stage >= ._262144_2 do sort_pass(N, ._262144_2)
 						} else {
