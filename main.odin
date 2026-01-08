@@ -148,7 +148,7 @@ main :: proc() {
     	fmt.println("N =", N)
 	    for M := u32(0); M < 1 + 0*bits.log2(N); M += 1 {
 	    	fmt.println("M =", M)
-	    	for step := 0; step < 400; step += 1 {
+	    	for step := 0; step < 2000; step += 1 {
 		    	if glfw.WindowShouldClose(window) do break
 
 		    	process_active_queries(step)
