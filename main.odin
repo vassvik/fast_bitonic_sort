@@ -137,7 +137,7 @@ main :: proc() {
 
     init_query_pool()
     
-    N := u32(256*1024)
+    N := u32(64*1024)
     step := 0
     outer: 
     //for N := u32(1024); N <= 32768 + 0*256*1024; N *= 2 {
