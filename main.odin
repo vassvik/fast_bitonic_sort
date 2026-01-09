@@ -295,10 +295,10 @@ main :: proc() {
 							if stage >= ._65536 do sort_pass(N, ._65536)
 							//if stage >= ._65536_1 do sort_pass(N, ._65536_1)
 							//if stage >= ._65536_2 do sort_pass(N, ._65536_2)
-							if stage >= ._131072 do sort_pass(N, ._131072)
+							//if stage >= ._131072 do sort_pass(N, ._131072)
 							//if stage >= ._131072_1 do sort_pass(N, ._131072_1)
 							//if stage >= ._131072_2 do sort_pass(N, ._131072_2)
-							if stage >= ._262144 do sort_pass(N, ._262144)
+							//if stage >= ._262144 do sort_pass(N, ._262144)
 							//if stage >= ._262144_1 do sort_pass(N, ._262144_1)
 							//if stage >= ._262144_2 do sort_pass(N, ._262144_2)
 						} else {
