@@ -425,7 +425,7 @@ void sort_32768_to_65536() {
     for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  } //barrier();
     for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  } //barrier();
     for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  } //barrier();
-    barrier();
+    //barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
