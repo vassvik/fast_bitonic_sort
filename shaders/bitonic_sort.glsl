@@ -554,7 +554,7 @@ void sort_32768_to_65536() {
     sorted[1] = compare_and_select(sorted[1], sorted[3],  (gid&2048) != 0);
     sorted[0] = compare_and_select(sorted[0], sorted[1],  (gid&1024) != 0);
 
-    //barrier();
+    barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
