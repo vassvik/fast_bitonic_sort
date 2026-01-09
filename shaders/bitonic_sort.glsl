@@ -30,38 +30,38 @@ T compare_and_select(T a, T b, bool select_max) {
 
 T sort_wave(T value) {
     // layer 0
-    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
 
     // layer 1
-    value = compare_and_select(value, shfl(value, sid^3),  sid > (sid^3));
-    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+    value = compare_and_select(value, shfl(value, sid^3),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
 
     // layer 2
-    value = compare_and_select(value, shfl(value, sid^7),  sid > (sid^7));
-    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
-    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+    value = compare_and_select(value, shfl(value, sid^7),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
 
     // layer 3
-    value = compare_and_select(value, shfl(value, sid^15), sid > (sid^15));
-    value = compare_and_select(value, shfl(value, sid^4),  sid > (sid^4));
-    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
-    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+    value = compare_and_select(value, shfl(value, sid^15), (sid&8) != 0);
+    value = compare_and_select(value, shfl(value, sid^4),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
 
     // layer 4
-    value = compare_and_select(value, shfl(value, sid^31), sid > (sid^31));
-    value = compare_and_select(value, shfl(value, sid^8),  sid > (sid^8));
-    value = compare_and_select(value, shfl(value, sid^4),  sid > (sid^4));
-    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
-    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+    value = compare_and_select(value, shfl(value, sid^31), (sid&16) != 0);
+    value = compare_and_select(value, shfl(value, sid^8),  (sid&8) != 0);
+    value = compare_and_select(value, shfl(value, sid^4),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
 
 #if defined(FOR_WAVE64)
     // layer 5
-    value = compare_and_select(value, shfl(value, sid^63), sid > (sid^63));
-    value = compare_and_select(value, shfl(value, sid^16), sid > (sid^16));
-    value = compare_and_select(value, shfl(value, sid^8),  sid > (sid^8));
-    value = compare_and_select(value, shfl(value, sid^4),  sid > (sid^4));
-    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
-    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+    value = compare_and_select(value, shfl(value, sid^63), (sid&32) != 0);
+    value = compare_and_select(value, shfl(value, sid^16), (sid&16) != 0);
+    value = compare_and_select(value, shfl(value, sid^8),  (sid&8) != 0);
+    value = compare_and_select(value, shfl(value, sid^4),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
 #endif
 
     return value;
@@ -69,13 +69,13 @@ T sort_wave(T value) {
 
 T finalize_wave(T value) {
 #if defined(FOR_WAVE64)
-    value = compare_and_select(value, shfl(value, sid^32), sid > (sid^32));
+    value = compare_and_select(value, shfl(value, sid^32), (sid&32) != 0);
 #endif
-    value = compare_and_select(value, shfl(value, sid^16), sid > (sid^16));
-    value = compare_and_select(value, shfl(value, sid^8),  sid > (sid^8));
-    value = compare_and_select(value, shfl(value, sid^4),  sid > (sid^4));
-    value = compare_and_select(value, shfl(value, sid^2),  sid > (sid^2));
-    value = compare_and_select(value, shfl(value, sid^1),  sid > (sid^1));
+    value = compare_and_select(value, shfl(value, sid^16), (sid&16) != 0);
+    value = compare_and_select(value, shfl(value, sid^8),  (sid&8) != 0);
+    value = compare_and_select(value, shfl(value, sid^4),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
 
     return value;
 }
@@ -323,9 +323,9 @@ void sort_1024_to_2048() {
     }
 
     T sorted[2];
-    for (int i = 0; i < 2; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
-    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } barrier();
-
+    for (int i = 0; i < 2; i++) {sorted[i] = b_values_in[idx[i]];  } //barrier();
+    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } //barrier();
+    barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
@@ -340,10 +340,10 @@ void sort_2048_to_4096() {
     }
 
     T sorted[4];
-    for (int i = 0; i < 4; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
-    for (int i = 0; i < 2; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } barrier();
-    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } barrier();
-
+    for (int i = 0; i < 4; i++) {sorted[i] = b_values_in[idx[i]];  } //barrier();
+    for (int i = 0; i < 2; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } //barrier();
+    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } //barrier();
+    barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
@@ -358,11 +358,11 @@ void sort_4096_to_8192() {
     }
 
     T sorted[8];
-    for (int i = 0; i < 8; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
-    for (int i = 0; i < 4; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0);  } barrier();
-    for (int i = 0; i < 2; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } barrier();
-    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } barrier();
-
+    for (int i = 0; i < 8; i++) {sorted[i] = b_values_in[idx[i]];  } //barrier();
+    for (int i = 0; i < 4; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0);  } //barrier();
+    for (int i = 0; i < 2; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } //barrier();
+    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } //barrier();
+    barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
@@ -377,12 +377,12 @@ void sort_8192_to_16384() {
     }
 
     T sorted[16];
-    for (int i = 0; i < 16; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
-    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8], (gid&8192) != 0);  } barrier();
-    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0);  } barrier();
-    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } barrier();
-    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } barrier();
-
+    for (int i = 0; i < 16; i++) {sorted[i] = b_values_in[idx[i]];  } //barrier();
+    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8], (gid&8192) != 0);  } //barrier();
+    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0);  } //barrier();
+    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } //barrier();
+    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } //barrier();
+    barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
@@ -397,13 +397,13 @@ void sort_16384_to_32768() {
     }
 
     T sorted[32];
-    for (int i = 0; i < 32; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
-    for (int i = 0; i < 16; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0);  } barrier();
-    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);   } barrier();
-    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);   } barrier();
-    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);   } barrier();
-    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);   } barrier();
-
+    for (int i = 0; i < 32; i++) {sorted[i] = b_values_in[idx[i]];  } //barrier();
+    for (int i = 0; i < 16; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0);  } //barrier();
+    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);   } //barrier();
+    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);   } //barrier();
+    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);   } //barrier();
+    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);   } //barrier();
+    barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
@@ -418,14 +418,14 @@ void sort_32768_to_65536() {
     }
 
     T sorted[64];
-    for (int i = 0; i < 64; i++) {sorted[i] = b_values_in[idx[i]]; } barrier();
-    for (int i = 0; i < 32; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+32], (gid&32768) != 0); } barrier();
-    for (int i = 0; i < 16; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0); } barrier();
-    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  } barrier();
-    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  } barrier();
-    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  } barrier();
-    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  } barrier();
-
+    for (int i = 0; i < 64; i++) {sorted[i] = b_values_in[idx[i]]; } //barrier();
+    for (int i = 0; i < 32; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+32], (gid&32768) != 0); } //barrier();
+    for (int i = 0; i < 16; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0); } //barrier();
+    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  } //barrier();
+    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  } //barrier();
+    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  } //barrier();
+    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  } //barrier();
+    barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
