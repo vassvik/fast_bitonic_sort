@@ -173,6 +173,7 @@ main :: proc() {
 				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, bitonic_data[0]);
 
 		    			block_query("Init", step)
+				    	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
 				        gl.DispatchCompute(N / 512, 1, 1)
 				    }
 
@@ -182,7 +183,7 @@ main :: proc() {
 				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, bitonic_data[0]);
 				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, bitonic_data[1]);
 
-				    	gl.MemoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
+				    	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
 						//block_query(fmt.tprintf("Sort %v", stage), step)
 				        gl.DispatchCompute(N / 1024, 1, 1)
 
@@ -326,15 +327,15 @@ main :: proc() {
 				    {
 		        		GL_LABEL_BLOCK("Verify Sort")	
 				    	clear_data: b32 = true
+				    	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
 				    	gl.ClearNamedBufferData(bitonic_verify_data, gl.R32UI, gl.RED_INTEGER, gl.UNSIGNED_INT, &clear_data)
-				    	gl.MemoryBarrier(gl.BUFFER_UPDATE_BARRIER_BIT)
 
 				        gl.UseProgram(bitonic_verify_program)
 				        gl.Uniform1ui(0, N);
 				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, bitonic_data[0]);
 				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, bitonic_verify_data);
 
-				    	gl.MemoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
+				    	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
 		    			block_query("Verify", step)
 				        gl.DispatchCompute(N / 512, 1, 1)
 		    		}
@@ -343,9 +344,10 @@ main :: proc() {
 		        		//GL_LABEL_BLOCK("Download Result")	
 
 				    	is_sorted: [32]b32
-				    	gl.MemoryBarrier(gl.BUFFER_UPDATE_BARRIER_BIT)
+				    	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
 		    			block_query("Verify", step)
 				        gl.GetNamedBufferSubData(bitonic_verify_data, 0, 4*32, &is_sorted)
+				    	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
 				        //fmt.println(is_sorted)
 				        for i in 0..<32 {
 				        	if (1<<u32(i)) > N do continue
