@@ -323,8 +323,8 @@ void sort_1024_to_2048() {
     }
 
     T sorted[2];
-    for (int i = 0; i < 2; i++) {sorted[i] = b_values_in[idx[i]]; barrier(); }
-    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0); barrier(); }
+    for (int i = 0; i < 2; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
+    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } barrier();
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -340,9 +340,9 @@ void sort_2048_to_4096() {
     }
 
     T sorted[4];
-    for (int i = 0; i < 4; i++) {sorted[i] = b_values_in[idx[i]]; barrier(); }
-    for (int i = 0; i < 2; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0); barrier(); }
-    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0); barrier(); }
+    for (int i = 0; i < 4; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
+    for (int i = 0; i < 2; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } barrier();
+    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } barrier();
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -358,10 +358,10 @@ void sort_4096_to_8192() {
     }
 
     T sorted[8];
-    for (int i = 0; i < 8; i++) {sorted[i] = b_values_in[idx[i]]; barrier(); }
-    for (int i = 0; i < 4; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0); barrier(); }
-    for (int i = 0; i < 2; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0); barrier(); }
-    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0); barrier(); }
+    for (int i = 0; i < 8; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
+    for (int i = 0; i < 4; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0);  } barrier();
+    for (int i = 0; i < 2; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } barrier();
+    for (int i = 0; i < 1; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } barrier();
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -377,11 +377,11 @@ void sort_8192_to_16384() {
     }
 
     T sorted[16];
-    for (int i = 0; i < 16; i++) {sorted[i] = b_values_in[idx[i]]; barrier(); }
-    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8], (gid&8192) != 0); barrier(); }
-    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0); barrier(); }
-    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0); barrier(); }
-    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0); barrier(); }
+    for (int i = 0; i < 16; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
+    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8], (gid&8192) != 0);  } barrier();
+    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0);  } barrier();
+    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0);  } barrier();
+    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0);  } barrier();
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -397,12 +397,12 @@ void sort_16384_to_32768() {
     }
 
     T sorted[32];
-    for (int i = 0; i < 32; i++) {sorted[i] = b_values_in[idx[i]]; barrier(); }
-    for (int i = 0; i < 16; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0); barrier(); }
-    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  barrier(); }
-    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  barrier(); }
-    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  barrier(); }
-    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  barrier(); }
+    for (int i = 0; i < 32; i++) {sorted[i] = b_values_in[idx[i]];  } barrier();
+    for (int i = 0; i < 16; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0);  } barrier();
+    for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);   } barrier();
+    for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);   } barrier();
+    for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);   } barrier();
+    for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);   } barrier();
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
