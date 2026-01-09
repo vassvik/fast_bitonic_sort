@@ -30,38 +30,38 @@ T compare_and_select(T a, T b, bool select_max) {
 
 T sort_wave(T value) {
     // layer 0
-    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
 
     // layer 1
-    value = compare_and_select(value, shfl(value, sid^3),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, 3),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
 
     // layer 2
-    value = compare_and_select(value, shfl(value, sid^7),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, 7),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
 
     // layer 3
-    value = compare_and_select(value, shfl(value, sid^15), (sid&8) != 0);
-    value = compare_and_select(value, shfl(value, sid^4),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, 15), (sid&8) != 0);
+    value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
 
     // layer 4
-    value = compare_and_select(value, shfl(value, sid^31), (sid&16) != 0);
-    value = compare_and_select(value, shfl(value, sid^8),  (sid&8) != 0);
-    value = compare_and_select(value, shfl(value, sid^4),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, 31), (sid&16) != 0);
+    value = compare_and_select(value, shfl(value, 8),  (sid&8) != 0);
+    value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
 
 #if defined(FOR_WAVE64)
     // layer 5
-    value = compare_and_select(value, shfl(value, sid^63), (sid&32) != 0);
-    value = compare_and_select(value, shfl(value, sid^16), (sid&16) != 0);
-    value = compare_and_select(value, shfl(value, sid^8),  (sid&8) != 0);
-    value = compare_and_select(value, shfl(value, sid^4),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, 63), (sid&32) != 0);
+    value = compare_and_select(value, shfl(value, 16), (sid&16) != 0);
+    value = compare_and_select(value, shfl(value, 8),  (sid&8) != 0);
+    value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
 #endif
 
     return value;
@@ -69,13 +69,13 @@ T sort_wave(T value) {
 
 T finalize_wave(T value) {
 #if defined(FOR_WAVE64)
-    value = compare_and_select(value, shfl(value, sid^32), (sid&32) != 0);
+    value = compare_and_select(value, shfl(value, 32), (sid&32) != 0);
 #endif
-    value = compare_and_select(value, shfl(value, sid^16), (sid&16) != 0);
-    value = compare_and_select(value, shfl(value, sid^8),  (sid&8) != 0);
-    value = compare_and_select(value, shfl(value, sid^4),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, sid^2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, sid^1),  (sid&1) != 0);
+    value = compare_and_select(value, shfl(value, 16), (sid&16) != 0);
+    value = compare_and_select(value, shfl(value, 8),  (sid&8) != 0);
+    value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
+    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
+    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
 
     return value;
 }
