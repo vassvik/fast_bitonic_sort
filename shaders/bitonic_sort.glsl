@@ -324,7 +324,7 @@ void sort_1024_to_2048() {
 
     T sorted[2];
     for (int i = 0; i < 2; i++) sorted[i] = b_values_in[idx[i]];
-    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], idx[i] > idx[i+1]); // 2048
+    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0); // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -341,8 +341,8 @@ void sort_2048_to_4096() {
 
     T sorted[4];
     for (int i = 0; i < 4; i++) sorted[i] = b_values_in[idx[i]];
-    for (int i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], idx[i] > idx[i+2]); // 4096
-    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], idx[i] > idx[i+1]); // 2048
+    for (int i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0); // 4096
+    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0); // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -359,9 +359,9 @@ void sort_4096_to_8192() {
 
     T sorted[8];
     for (int i = 0; i < 8; i++) sorted[i] = b_values_in[idx[i]];
-    for (int i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], idx[i] > idx[i+4]); // 8192
-    for (int i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], idx[i] > idx[i+2]); // 4096
-    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], idx[i] > idx[i+1]); // 2048
+    for (int i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0); // 8192
+    for (int i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0); // 4096
+    for (int i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0); // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -378,10 +378,10 @@ void sort_8192_to_16384() {
 
     T sorted[16];
     for (int i = 0; i < 16; i++) sorted[i] = b_values_in[idx[i]];
-    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8], idx[i] > idx[i+8]); // 16384
-    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], idx[i] > idx[i+4]); // 8192
-    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], idx[i] > idx[i+2]); // 4096
-    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], idx[i] > idx[i+1]); // 2048
+    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8], (gid&8192) != 0); // 16384
+    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&4096) != 0); // 8192
+    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&2048) != 0); // 4096
+    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&1024) != 0); // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -398,11 +398,11 @@ void sort_16384_to_32768() {
 
     T sorted[32];
     for (int i = 0; i < 32; i++) sorted[i] = b_values_in[idx[i]];
-    for (int i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], idx[i] > idx[i+16]); // 32768
-    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  idx[i] > idx[i+8]);  // 16384
-    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  idx[i] > idx[i+4]);  // 8192
-    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  idx[i] > idx[i+2]);  // 4096
-    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  idx[i] > idx[i+1]);  // 2048
+    for (int i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0); // 32768
+    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  // 16384
+    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  // 8192
+    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
+    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -419,12 +419,12 @@ void sort_32768_to_65536() {
 
     T sorted[64];
     for (int i = 0; i < 64; i++) sorted[i] = b_values_in[idx[i]];
-    for (int i = 0; i < 32; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+32], idx[i] > idx[i+32]); // 65536
-    for (int i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], idx[i] > idx[i+16]); // 32768
-    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  idx[i] > idx[i+8]);  // 16384
-    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  idx[i] > idx[i+4]);  // 8192
-    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  idx[i] > idx[i+2]);  // 4096
-    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  idx[i] > idx[i+1]);  // 2048
+    for (int i = 0; i < 32; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+32], (gid&32768) != 0); // 65536
+    for (int i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0); // 32768
+    for (int i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  // 16384
+    for (int i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  // 8192
+    for (int i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
+    for (int i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
