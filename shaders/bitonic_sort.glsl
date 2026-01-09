@@ -637,7 +637,7 @@ void sort_32768_to_65536() {
         sorted[0] = min(sorted[0], sorted[1]);
     }
 
-    //barrier();
+    barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
