@@ -40,40 +40,80 @@ T finalize_1024(uint lindex, T sorted0) {
     /// sort1024
     s_partially_sorted[lindex] = sorted0;
     barrier();
-    T sorted1 = s_partially_sorted[lindex^(1*128)];
-    T sorted2 = s_partially_sorted[lindex^(2*128)];
-    T sorted3 = s_partially_sorted[lindex^(3*128)];
-    T sorted4 = s_partially_sorted[lindex^(4*128)];
-    T sorted5 = s_partially_sorted[lindex^(5*128)];
-    T sorted6 = s_partially_sorted[lindex^(6*128)];
-    T sorted7 = s_partially_sorted[lindex^(7*128)];
 
-    sorted0 = compare_and_select(sorted0, sorted4, (lindex^(0*128)) > (lindex^(4*128)));
-    sorted1 = compare_and_select(sorted1, sorted5, (lindex^(1*128)) > (lindex^(5*128)));
-    sorted2 = compare_and_select(sorted2, sorted6, (lindex^(2*128)) > (lindex^(6*128)));
-    sorted3 = compare_and_select(sorted3, sorted7, (lindex^(3*128)) > (lindex^(7*128)));
+    T sorted[32];
+    sorted[0] = sorted0;
+    sorted[1] = s_partially_sorted[lindex^(1*32)];
+    sorted[2] = s_partially_sorted[lindex^(2*32)];
+    sorted[3] = s_partially_sorted[lindex^(3*32)];
+    sorted[4] = s_partially_sorted[lindex^(4*32)];
+    sorted[5] = s_partially_sorted[lindex^(5*32)];
+    sorted[6] = s_partially_sorted[lindex^(6*32)];
+    sorted[7] = s_partially_sorted[lindex^(7*32)];
+    sorted[8] = s_partially_sorted[lindex^(8*32)];
+    sorted[9] = s_partially_sorted[lindex^(9*32)];
+    sorted[10] = s_partially_sorted[lindex^(10*32)];
+    sorted[11] = s_partially_sorted[lindex^(11*32)];
+    sorted[12] = s_partially_sorted[lindex^(12*32)];
+    sorted[13] = s_partially_sorted[lindex^(13*32)];
+    sorted[14] = s_partially_sorted[lindex^(14*32)];
+    sorted[15] = s_partially_sorted[lindex^(15*32)];
+    sorted[16] = s_partially_sorted[lindex^(16*32)];
+    sorted[17] = s_partially_sorted[lindex^(17*32)];
+    sorted[18] = s_partially_sorted[lindex^(18*32)];
+    sorted[19] = s_partially_sorted[lindex^(19*32)];
+    sorted[20] = s_partially_sorted[lindex^(20*32)];
+    sorted[21] = s_partially_sorted[lindex^(21*32)];
+    sorted[22] = s_partially_sorted[lindex^(22*32)];
+    sorted[23] = s_partially_sorted[lindex^(23*32)];
+    sorted[24] = s_partially_sorted[lindex^(24*32)];
+    sorted[25] = s_partially_sorted[lindex^(25*32)];
+    sorted[26] = s_partially_sorted[lindex^(26*32)];
+    sorted[27] = s_partially_sorted[lindex^(27*32)];
+    sorted[28] = s_partially_sorted[lindex^(28*32)];
+    sorted[29] = s_partially_sorted[lindex^(29*32)];
+    sorted[30] = s_partially_sorted[lindex^(30*32)];
+    sorted[31] = s_partially_sorted[lindex^(31*32)];
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*128)) > (lindex^(2*128)));
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*128)) > (lindex^(3*128)));
+    sorted[0]  = compare_and_select(sorted[0],  sorted[16], (lindex^(0*32))  > (lindex^(16*32)));
+    sorted[1]  = compare_and_select(sorted[1],  sorted[17], (lindex^(1*32))  > (lindex^(17*32)));
+    sorted[2]  = compare_and_select(sorted[2],  sorted[18], (lindex^(2*32))  > (lindex^(18*32)));
+    sorted[3]  = compare_and_select(sorted[3],  sorted[19], (lindex^(3*32))  > (lindex^(19*32)));
+    sorted[4]  = compare_and_select(sorted[4],  sorted[20], (lindex^(4*32))  > (lindex^(20*32)));
+    sorted[5]  = compare_and_select(sorted[5],  sorted[21], (lindex^(5*32))  > (lindex^(21*32)));
+    sorted[6]  = compare_and_select(sorted[6],  sorted[22], (lindex^(6*32))  > (lindex^(22*32)));
+    sorted[7]  = compare_and_select(sorted[7],  sorted[23], (lindex^(7*32))  > (lindex^(23*32)));
+    sorted[8]  = compare_and_select(sorted[8],  sorted[24], (lindex^(8*32))  > (lindex^(24*32)));
+    sorted[9]  = compare_and_select(sorted[9],  sorted[25], (lindex^(9*32))  > (lindex^(25*32)));
+    sorted[10] = compare_and_select(sorted[10], sorted[26], (lindex^(10*32)) > (lindex^(26*32)));
+    sorted[11] = compare_and_select(sorted[11], sorted[27], (lindex^(11*32)) > (lindex^(27*32)));
+    sorted[12] = compare_and_select(sorted[12], sorted[28], (lindex^(12*32)) > (lindex^(28*32)));
+    sorted[13] = compare_and_select(sorted[13], sorted[29], (lindex^(13*32)) > (lindex^(29*32)));
+    sorted[14] = compare_and_select(sorted[14], sorted[30], (lindex^(14*32)) > (lindex^(30*32)));
+    sorted[15] = compare_and_select(sorted[15], sorted[31], (lindex^(15*32)) > (lindex^(31*32)));
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*128)) > (lindex^(1*128)));
+    sorted[0]  = compare_and_select(sorted[0],  sorted[8],  (lindex^(0*32))  > (lindex^(8*32)));
+    sorted[1]  = compare_and_select(sorted[1],  sorted[9],  (lindex^(1*32))  > (lindex^(9*32)));
+    sorted[2]  = compare_and_select(sorted[2],  sorted[10], (lindex^(2*32))  > (lindex^(10*32)));
+    sorted[3]  = compare_and_select(sorted[3],  sorted[11], (lindex^(3*32))  > (lindex^(11*32)));
+    sorted[4]  = compare_and_select(sorted[4],  sorted[12], (lindex^(4*32))  > (lindex^(12*32)));
+    sorted[5]  = compare_and_select(sorted[5],  sorted[13], (lindex^(5*32))  > (lindex^(13*32)));
+    sorted[6]  = compare_and_select(sorted[6],  sorted[14], (lindex^(6*32))  > (lindex^(14*32)));
+    sorted[7]  = compare_and_select(sorted[7],  sorted[15], (lindex^(7*32))  > (lindex^(15*32)));
 
-    lindex = lindex^1024;
-    s_partially_sorted[(lindex)] = sorted0;
-    barrier();
+    sorted[0]  = compare_and_select(sorted[0],  sorted[4],  (lindex^(0*32))  > (lindex^(4*32)));
+    sorted[1]  = compare_and_select(sorted[1],  sorted[5],  (lindex^(1*32))  > (lindex^(5*32)));
+    sorted[2]  = compare_and_select(sorted[2],  sorted[6],  (lindex^(2*32))  > (lindex^(6*32)));
+    sorted[3]  = compare_and_select(sorted[3],  sorted[7],  (lindex^(3*32))  > (lindex^(7*32)));
+    
+    sorted[0]  = compare_and_select(sorted[0],  sorted[2],  (lindex^(0*32))  > (lindex^(2*32)));
+    sorted[1]  = compare_and_select(sorted[1],  sorted[3],  (lindex^(1*32))  > (lindex^(3*32)));
 
-    sorted1 = s_partially_sorted[lindex^(1*32)];
-    sorted2 = s_partially_sorted[lindex^(2*32)];
-    sorted3 = s_partially_sorted[lindex^(3*32)];
+    sorted[0]  = compare_and_select(sorted[0],  sorted[1],  (lindex^(0*32))  > (lindex^(1*32)));
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*32)) > (lindex^(2*32)));
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(3*32)));
+    sorted[0] = finalize_wave(sorted[0]);
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
-
-    sorted0 = finalize_wave(sorted0);
-
-    return sorted0;
+    return sorted[0];
 }
 
 
