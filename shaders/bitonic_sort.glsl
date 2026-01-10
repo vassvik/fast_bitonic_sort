@@ -72,6 +72,7 @@ T finalize_1024(uint lindex, T sorted0) {
     sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(3*32)));
 
     sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
+    barrier();
 
     sorted0 = finalize_wave(sorted0);
 
