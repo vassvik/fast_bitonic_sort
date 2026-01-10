@@ -58,6 +58,8 @@ T finalize_1024(uint lindex, T sorted0) {
 
     sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*128)) > (lindex^(1*128)));
 
+    barrier();
+    
     lindex = lindex^1024;
     s_partially_sorted[(lindex)] = sorted0;
     barrier();
