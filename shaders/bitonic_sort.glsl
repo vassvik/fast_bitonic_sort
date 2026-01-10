@@ -40,36 +40,33 @@ T finalize_1024(uint lindex, T sorted0) {
     /// sort1024
     s_partially_sorted[lindex] = sorted0;
     barrier();
-    T sorted1 = s_partially_sorted[lindex^(1*128)];
-    T sorted2 = s_partially_sorted[lindex^(2*128)];
-    T sorted3 = s_partially_sorted[lindex^(3*128)];
-    T sorted4 = s_partially_sorted[lindex^(4*128)];
-    T sorted5 = s_partially_sorted[lindex^(5*128)];
-    T sorted6 = s_partially_sorted[lindex^(6*128)];
-    T sorted7 = s_partially_sorted[lindex^(7*128)];
 
-    sorted0 = compare_and_select(sorted0, sorted4, (lindex^(0*128)) > (lindex^(4*128)));
-    sorted1 = compare_and_select(sorted1, sorted5, (lindex^(1*128)) > (lindex^(5*128)));
-    sorted2 = compare_and_select(sorted2, sorted6, (lindex^(2*128)) > (lindex^(6*128)));
-    sorted3 = compare_and_select(sorted3, sorted7, (lindex^(3*128)) > (lindex^(7*128)));
-
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*128)) > (lindex^(2*128)));
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*128)) > (lindex^(3*128)));
-
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*128)) > (lindex^(1*128)));
-
+    T sorted1 = s_partially_sorted[lindex^512];
+    sorted0 = compare_and_select(sorted0, sorted1, lindex > (lindex^512));
     lindex = lindex^1024;
     s_partially_sorted[(lindex)] = sorted0;
     barrier();
 
-    sorted1 = s_partially_sorted[lindex^(1*32)];
-    sorted2 = s_partially_sorted[lindex^(2*32)];
-    sorted3 = s_partially_sorted[lindex^(3*32)];
+    sorted1 = s_partially_sorted[lindex^256];
+    sorted0 = compare_and_select(sorted0, sorted1, lindex > (lindex^256));
+    lindex = lindex^1024;
+    s_partially_sorted[(lindex)] = sorted0;
+    barrier();
 
-    sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*32)) > (lindex^(2*32)));
-    sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(3*32)));
+    sorted1 = s_partially_sorted[lindex^128];
+    sorted0 = compare_and_select(sorted0, sorted1, lindex > (lindex^128));
+    lindex = lindex^1024;
+    s_partially_sorted[(lindex)] = sorted0;
+    barrier();
 
-    sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
+    sorted1 = s_partially_sorted[lindex^64];
+    sorted0 = compare_and_select(sorted0, sorted1, lindex > (lindex^64));
+    lindex = lindex^1024;
+    s_partially_sorted[(lindex)] = sorted0;
+    barrier();
+
+    sorted1 = s_partially_sorted[lindex^32];
+    sorted0 = compare_and_select(sorted0, sorted1, lindex > (lindex^32));
 
     sorted0 = finalize_wave(sorted0);
 
