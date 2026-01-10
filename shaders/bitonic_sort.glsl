@@ -20,9 +20,7 @@ T compare_and_select(T a, T b, bool select_max) {
 
 shared T s_partially_sorted[2*1024];
 
-
-
-void sort_16384_to_32768() {
+void main() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
@@ -246,7 +244,3 @@ void sort_16384_to_32768() {
 
     b_values_out[gid] = sorted[0];
 } 
-
-void main() {
-    sort_16384_to_32768();
-}
