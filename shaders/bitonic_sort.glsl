@@ -79,6 +79,7 @@ T finalize_1024(uint lindex, T sorted0) {
 
     sorted0 = finalize_wave(sorted0);
 
+    barrier();
     return sorted0;
 }
 
