@@ -24,6 +24,6 @@ uvec4 pcg4d(uvec4 v) {
 
 void main() {
     uint gid = gl_GlobalInvocationID.x;
-    b_values[gid] = gid < u_max_count ? (pcg4d(uvec4(gid, 0, 0, 0)).x % 100000) : -2;
+    b_values[gid] = 2*(gid&32767) + (gid/32768);
 }
 
