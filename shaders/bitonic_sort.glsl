@@ -42,16 +42,16 @@ T finalize_1024(uint lindex, T sorted0) {
     barrier();
 
     T sorted[32];
-    sorted[0] = sorted0;
-    sorted[1] = s_partially_sorted[lindex^(1*32)];
-    sorted[2] = s_partially_sorted[lindex^(2*32)];
-    sorted[3] = s_partially_sorted[lindex^(3*32)];
-    sorted[4] = s_partially_sorted[lindex^(4*32)];
-    sorted[5] = s_partially_sorted[lindex^(5*32)];
-    sorted[6] = s_partially_sorted[lindex^(6*32)];
-    sorted[7] = s_partially_sorted[lindex^(7*32)];
-    sorted[8] = s_partially_sorted[lindex^(8*32)];
-    sorted[9] = s_partially_sorted[lindex^(9*32)];
+    sorted[0]  = sorted0;
+    sorted[1]  = s_partially_sorted[lindex^(1*32)];
+    sorted[2]  = s_partially_sorted[lindex^(2*32)];
+    sorted[3]  = s_partially_sorted[lindex^(3*32)];
+    sorted[4]  = s_partially_sorted[lindex^(4*32)];
+    sorted[5]  = s_partially_sorted[lindex^(5*32)];
+    sorted[6]  = s_partially_sorted[lindex^(6*32)];
+    sorted[7]  = s_partially_sorted[lindex^(7*32)];
+    sorted[8]  = s_partially_sorted[lindex^(8*32)];
+    sorted[9]  = s_partially_sorted[lindex^(9*32)];
     sorted[10] = s_partially_sorted[lindex^(10*32)];
     sorted[11] = s_partially_sorted[lindex^(11*32)];
     sorted[12] = s_partially_sorted[lindex^(12*32)];
@@ -121,131 +121,75 @@ void sort_16384_to_32768() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
-    uint idx[32];
-    for (int i = 0; i < 16; i++) {
-        idx[i]    = gid^(i*1024);
-        idx[16+i] = idx[i]^(32*1024-1);
-    }
-
     T sorted[32];
-    //for (int i = 0; i < 32; i++) {sorted[i] = b_values_in[idx[i]]; } //barrier();
-    //for (int i = 0; i < 16; i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0); } //barrier();
-    //for (int i = 0; i < 8;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  } //barrier();
-    //for (int i = 0; i < 4;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  } //barrier();
-    //for (int i = 0; i < 2;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  } //barrier();
-    //for (int i = 0; i < 1;  i++) {sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  } //barrier();
+    sorted[0]  = b_values_in[gid^(0*1024)];
+    sorted[1]  = b_values_in[gid^(1*1024)];
+    sorted[2]  = b_values_in[gid^(2*1024)];
+    sorted[3]  = b_values_in[gid^(3*1024)];
+    sorted[4]  = b_values_in[gid^(4*1024)];
+    sorted[5]  = b_values_in[gid^(5*1024)];
+    sorted[6]  = b_values_in[gid^(6*1024)];
+    sorted[7]  = b_values_in[gid^(7*1024)];
+    sorted[8]  = b_values_in[gid^(8*1024)];
+    sorted[9]  = b_values_in[gid^(9*1024)];
+    sorted[10] = b_values_in[gid^(10*1024)];
+    sorted[11] = b_values_in[gid^(11*1024)];
+    sorted[12] = b_values_in[gid^(12*1024)];
+    sorted[13] = b_values_in[gid^(13*1024)];
+    sorted[14] = b_values_in[gid^(14*1024)];
+    sorted[15] = b_values_in[gid^(15*1024)];
+    sorted[16] = b_values_in[gid^(0*1024)^32767];
+    sorted[17] = b_values_in[gid^(1*1024)^32767];
+    sorted[18] = b_values_in[gid^(2*1024)^32767];
+    sorted[19] = b_values_in[gid^(3*1024)^32767];
+    sorted[20] = b_values_in[gid^(4*1024)^32767];
+    sorted[21] = b_values_in[gid^(5*1024)^32767];
+    sorted[22] = b_values_in[gid^(6*1024)^32767];
+    sorted[23] = b_values_in[gid^(7*1024)^32767];
+    sorted[24] = b_values_in[gid^(8*1024)^32767];
+    sorted[25] = b_values_in[gid^(9*1024)^32767];
+    sorted[26] = b_values_in[gid^(10*1024)^32767];
+    sorted[27] = b_values_in[gid^(11*1024)^32767];
+    sorted[28] = b_values_in[gid^(12*1024)^32767];
+    sorted[29] = b_values_in[gid^(13*1024)^32767];
+    sorted[30] = b_values_in[gid^(14*1024)^32767];
+    sorted[31] = b_values_in[gid^(15*1024)^32767];
 
-    sorted[0] = b_values_in[idx[0]];
-    sorted[1] = b_values_in[idx[1]];
-    sorted[2] = b_values_in[idx[2]];
-    sorted[3] = b_values_in[idx[3]];
-    sorted[4] = b_values_in[idx[4]];
-    sorted[5] = b_values_in[idx[5]];
-    sorted[6] = b_values_in[idx[6]];
-    sorted[7] = b_values_in[idx[7]];
-    sorted[8] = b_values_in[idx[8]];
-    sorted[9] = b_values_in[idx[9]];
-    sorted[10] = b_values_in[idx[10]];
-    sorted[11] = b_values_in[idx[11]];
-    sorted[12] = b_values_in[idx[12]];
-    sorted[13] = b_values_in[idx[13]];
-    sorted[14] = b_values_in[idx[14]];
-    sorted[15] = b_values_in[idx[15]];
-    sorted[16] = b_values_in[idx[16]];
-    sorted[17] = b_values_in[idx[17]];
-    sorted[18] = b_values_in[idx[18]];
-    sorted[19] = b_values_in[idx[19]];
-    sorted[20] = b_values_in[idx[20]];
-    sorted[21] = b_values_in[idx[21]];
-    sorted[22] = b_values_in[idx[22]];
-    sorted[23] = b_values_in[idx[23]];
-    sorted[24] = b_values_in[idx[24]];
-    sorted[25] = b_values_in[idx[25]];
-    sorted[26] = b_values_in[idx[26]];
-    sorted[27] = b_values_in[idx[27]];
-    sorted[28] = b_values_in[idx[28]];
-    sorted[29] = b_values_in[idx[29]];
-    sorted[30] = b_values_in[idx[30]];
-    sorted[31] = b_values_in[idx[31]];
+    sorted[0]  = compare_and_select(sorted[0],  sorted[16], (gid&16384) != 0);
+    sorted[1]  = compare_and_select(sorted[1],  sorted[17], (gid&16384) != 0);
+    sorted[2]  = compare_and_select(sorted[2],  sorted[18], (gid&16384) != 0);
+    sorted[3]  = compare_and_select(sorted[3],  sorted[19], (gid&16384) != 0);
+    sorted[4]  = compare_and_select(sorted[4],  sorted[20], (gid&16384) != 0);
+    sorted[5]  = compare_and_select(sorted[5],  sorted[21], (gid&16384) != 0);
+    sorted[6]  = compare_and_select(sorted[6],  sorted[22], (gid&16384) != 0);
+    sorted[7]  = compare_and_select(sorted[7],  sorted[23], (gid&16384) != 0);
+    sorted[8]  = compare_and_select(sorted[8],  sorted[24], (gid&16384) != 0);
+    sorted[9]  = compare_and_select(sorted[9],  sorted[25], (gid&16384) != 0);
+    sorted[10] = compare_and_select(sorted[10], sorted[26], (gid&16384) != 0);
+    sorted[11] = compare_and_select(sorted[11], sorted[27], (gid&16384) != 0);
+    sorted[12] = compare_and_select(sorted[12], sorted[28], (gid&16384) != 0);
+    sorted[13] = compare_and_select(sorted[13], sorted[29], (gid&16384) != 0);
+    sorted[14] = compare_and_select(sorted[14], sorted[30], (gid&16384) != 0);
+    sorted[15] = compare_and_select(sorted[15], sorted[31], (gid&16384) != 0);
 
-    if ((gid&16384) != 0) {
-        sorted[0] = max(sorted[0], sorted[16]);
-        sorted[1] = max(sorted[1], sorted[17]);
-        sorted[2] = max(sorted[2], sorted[18]);
-        sorted[3] = max(sorted[3], sorted[19]);
-        sorted[4] = max(sorted[4], sorted[20]);
-        sorted[5] = max(sorted[5], sorted[21]);
-        sorted[6] = max(sorted[6], sorted[22]);
-        sorted[7] = max(sorted[7], sorted[23]);
-        sorted[8] = max(sorted[8], sorted[24]);
-        sorted[9] = max(sorted[9], sorted[25]);
-        sorted[10] = max(sorted[10], sorted[26]);
-        sorted[11] = max(sorted[11], sorted[27]);
-        sorted[12] = max(sorted[12], sorted[28]);
-        sorted[13] = max(sorted[13], sorted[29]);
-        sorted[14] = max(sorted[14], sorted[30]);
-        sorted[15] = max(sorted[15], sorted[31]);
-    } else {
-        sorted[0] = min(sorted[0], sorted[16]);
-        sorted[1] = min(sorted[1], sorted[17]);
-        sorted[2] = min(sorted[2], sorted[18]);
-        sorted[3] = min(sorted[3], sorted[19]);
-        sorted[4] = min(sorted[4], sorted[20]);
-        sorted[5] = min(sorted[5], sorted[21]);
-        sorted[6] = min(sorted[6], sorted[22]);
-        sorted[7] = min(sorted[7], sorted[23]);
-        sorted[8] = min(sorted[8], sorted[24]);
-        sorted[9] = min(sorted[9], sorted[25]);
-        sorted[10] = min(sorted[10], sorted[26]);
-        sorted[11] = min(sorted[11], sorted[27]);
-        sorted[12] = min(sorted[12], sorted[28]);
-        sorted[13] = min(sorted[13], sorted[29]);
-        sorted[14] = min(sorted[14], sorted[30]);
-        sorted[15] = min(sorted[15], sorted[31]);
-    }
+    sorted[0]  = compare_and_select(sorted[0],  sorted[8],  (gid&8192)  != 0);
+    sorted[1]  = compare_and_select(sorted[1],  sorted[9],  (gid&8192)  != 0);
+    sorted[2]  = compare_and_select(sorted[2],  sorted[10], (gid&8192)  != 0);
+    sorted[3]  = compare_and_select(sorted[3],  sorted[11], (gid&8192)  != 0);
+    sorted[4]  = compare_and_select(sorted[4],  sorted[12], (gid&8192)  != 0);
+    sorted[5]  = compare_and_select(sorted[5],  sorted[13], (gid&8192)  != 0);
+    sorted[6]  = compare_and_select(sorted[6],  sorted[14], (gid&8192)  != 0);
+    sorted[7]  = compare_and_select(sorted[7],  sorted[15], (gid&8192)  != 0);
 
-    if ((gid&8192) != 0) {
-        sorted[0] = max(sorted[0], sorted[8]);
-        sorted[1] = max(sorted[1], sorted[9]);
-        sorted[2] = max(sorted[2], sorted[10]);
-        sorted[3] = max(sorted[3], sorted[11]);
-        sorted[4] = max(sorted[4], sorted[12]);
-        sorted[5] = max(sorted[5], sorted[13]);
-        sorted[6] = max(sorted[6], sorted[14]);
-        sorted[7] = max(sorted[7], sorted[15]);
-    } else {
-        sorted[0] = min(sorted[0], sorted[8]);
-        sorted[1] = min(sorted[1], sorted[9]);
-        sorted[2] = min(sorted[2], sorted[10]);
-        sorted[3] = min(sorted[3], sorted[11]);
-        sorted[4] = min(sorted[4], sorted[12]);
-        sorted[5] = min(sorted[5], sorted[13]);
-        sorted[6] = min(sorted[6], sorted[14]);
-        sorted[7] = min(sorted[7], sorted[15]);
-    }
-    if ((gid&4096) != 0) {
-        sorted[0] = max(sorted[0], sorted[4]);
-        sorted[1] = max(sorted[1], sorted[5]);
-        sorted[2] = max(sorted[2], sorted[6]);
-        sorted[3] = max(sorted[3], sorted[7]);
-    } else {
-        sorted[0] = min(sorted[0], sorted[4]);
-        sorted[1] = min(sorted[1], sorted[5]);
-        sorted[2] = min(sorted[2], sorted[6]);
-        sorted[3] = min(sorted[3], sorted[7]);
-    }
-    if ((gid&2048) != 0) {
-        sorted[0] = max(sorted[0], sorted[2]);
-        sorted[1] = max(sorted[1], sorted[3]);
-    } else {
-        sorted[0] = min(sorted[0], sorted[2]);
-        sorted[1] = min(sorted[1], sorted[3]);
-    }
-    if ((gid&1024) != 0) {
-        sorted[0] = max(sorted[0], sorted[1]);
-    } else {
-        sorted[0] = min(sorted[0], sorted[1]);
-    }
+    sorted[0]  = compare_and_select(sorted[0],  sorted[4],  (gid&4096)  != 0);
+    sorted[1]  = compare_and_select(sorted[1],  sorted[5],  (gid&4096)  != 0);
+    sorted[2]  = compare_and_select(sorted[2],  sorted[6],  (gid&4096)  != 0);
+    sorted[3]  = compare_and_select(sorted[3],  sorted[7],  (gid&4096)  != 0);
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[2],  (gid&2048)  != 0);
+    sorted[1]  = compare_and_select(sorted[1],  sorted[3],  (gid&2048)  != 0);
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[1],  (gid&1024)  != 0);
 
     //barrier();
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
