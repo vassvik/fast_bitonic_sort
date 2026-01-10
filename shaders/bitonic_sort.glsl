@@ -1,8 +1,5 @@
 #version 460 core
 
-#extension GL_KHR_shader_subgroup_basic : require
-#extension GL_KHR_shader_subgroup_shuffle : require
-
 layout (binding = 0, std430) buffer buffer_0 {
   uint[] b_values_in;
 };
@@ -19,19 +16,6 @@ layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in ;
 
 T compare_and_select(T a, T b, bool select_max) {
     return select_max ? max(a, b) : min(a, b);
-}
-
-#define sid gl_SubgroupInvocationID
-#define shfl(v, i) subgroupShuffleXor(v, i)
-
-T finalize_wave(T value) {
-    value = compare_and_select(value, shfl(value, 16), (sid&16) != 0);
-    value = compare_and_select(value, shfl(value, 8),  (sid&8) != 0);
-    value = compare_and_select(value, shfl(value, 4),  (sid&4) != 0);
-    value = compare_and_select(value, shfl(value, 2),  (sid&2) != 0);
-    value = compare_and_select(value, shfl(value, 1),  (sid&1) != 0);
-
-    return value;
 }
 
 shared T s_partially_sorted[2*1024];
@@ -111,7 +95,78 @@ T finalize_1024(uint lindex, T sorted0) {
 
     sorted[0]  = compare_and_select(sorted[0],  sorted[1],  (lindex^(0*32))  > (lindex^(1*32)));
 
-    sorted[0] = finalize_wave(sorted[0]);
+    lindex = lindex^1024;
+    s_partially_sorted[lindex] = sorted[0];
+    barrier();
+
+    sorted[0]  = s_partially_sorted[lindex^(0)];
+    sorted[1]  = s_partially_sorted[lindex^(1)];
+    sorted[2]  = s_partially_sorted[lindex^(2)];
+    sorted[3]  = s_partially_sorted[lindex^(3)];
+    sorted[4]  = s_partially_sorted[lindex^(4)];
+    sorted[5]  = s_partially_sorted[lindex^(5)];
+    sorted[6]  = s_partially_sorted[lindex^(6)];
+    sorted[7]  = s_partially_sorted[lindex^(7)];
+    sorted[8]  = s_partially_sorted[lindex^(8)];
+    sorted[9]  = s_partially_sorted[lindex^(9)];
+    sorted[10] = s_partially_sorted[lindex^(10)];
+    sorted[11] = s_partially_sorted[lindex^(11)];
+    sorted[12] = s_partially_sorted[lindex^(12)];
+    sorted[13] = s_partially_sorted[lindex^(13)];
+    sorted[14] = s_partially_sorted[lindex^(14)];
+    sorted[15] = s_partially_sorted[lindex^(15)];
+    sorted[16] = s_partially_sorted[lindex^(16)];
+    sorted[17] = s_partially_sorted[lindex^(17)];
+    sorted[18] = s_partially_sorted[lindex^(18)];
+    sorted[19] = s_partially_sorted[lindex^(19)];
+    sorted[20] = s_partially_sorted[lindex^(20)];
+    sorted[21] = s_partially_sorted[lindex^(21)];
+    sorted[22] = s_partially_sorted[lindex^(22)];
+    sorted[23] = s_partially_sorted[lindex^(23)];
+    sorted[24] = s_partially_sorted[lindex^(24)];
+    sorted[25] = s_partially_sorted[lindex^(25)];
+    sorted[26] = s_partially_sorted[lindex^(26)];
+    sorted[27] = s_partially_sorted[lindex^(27)];
+    sorted[28] = s_partially_sorted[lindex^(28)];
+    sorted[29] = s_partially_sorted[lindex^(29)];
+    sorted[30] = s_partially_sorted[lindex^(30)];
+    sorted[31] = s_partially_sorted[lindex^(31)];
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[16], (lindex^(0))  > (lindex^(16)));
+    sorted[1]  = compare_and_select(sorted[1],  sorted[17], (lindex^(1))  > (lindex^(17)));
+    sorted[2]  = compare_and_select(sorted[2],  sorted[18], (lindex^(2))  > (lindex^(18)));
+    sorted[3]  = compare_and_select(sorted[3],  sorted[19], (lindex^(3))  > (lindex^(19)));
+    sorted[4]  = compare_and_select(sorted[4],  sorted[20], (lindex^(4))  > (lindex^(20)));
+    sorted[5]  = compare_and_select(sorted[5],  sorted[21], (lindex^(5))  > (lindex^(21)));
+    sorted[6]  = compare_and_select(sorted[6],  sorted[22], (lindex^(6))  > (lindex^(22)));
+    sorted[7]  = compare_and_select(sorted[7],  sorted[23], (lindex^(7))  > (lindex^(23)));
+    sorted[8]  = compare_and_select(sorted[8],  sorted[24], (lindex^(8))  > (lindex^(24)));
+    sorted[9]  = compare_and_select(sorted[9],  sorted[25], (lindex^(9))  > (lindex^(25)));
+    sorted[10] = compare_and_select(sorted[10], sorted[26], (lindex^(10)) > (lindex^(26)));
+    sorted[11] = compare_and_select(sorted[11], sorted[27], (lindex^(11)) > (lindex^(27)));
+    sorted[12] = compare_and_select(sorted[12], sorted[28], (lindex^(12)) > (lindex^(28)));
+    sorted[13] = compare_and_select(sorted[13], sorted[29], (lindex^(13)) > (lindex^(29)));
+    sorted[14] = compare_and_select(sorted[14], sorted[30], (lindex^(14)) > (lindex^(30)));
+    sorted[15] = compare_and_select(sorted[15], sorted[31], (lindex^(15)) > (lindex^(31)));
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[8],  (lindex^(0))  > (lindex^(8)));
+    sorted[1]  = compare_and_select(sorted[1],  sorted[9],  (lindex^(1))  > (lindex^(9)));
+    sorted[2]  = compare_and_select(sorted[2],  sorted[10], (lindex^(2))  > (lindex^(10)));
+    sorted[3]  = compare_and_select(sorted[3],  sorted[11], (lindex^(3))  > (lindex^(11)));
+    sorted[4]  = compare_and_select(sorted[4],  sorted[12], (lindex^(4))  > (lindex^(12)));
+    sorted[5]  = compare_and_select(sorted[5],  sorted[13], (lindex^(5))  > (lindex^(13)));
+    sorted[6]  = compare_and_select(sorted[6],  sorted[14], (lindex^(6))  > (lindex^(14)));
+    sorted[7]  = compare_and_select(sorted[7],  sorted[15], (lindex^(7))  > (lindex^(15)));
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[4],  (lindex^(0))  > (lindex^(4)));
+    sorted[1]  = compare_and_select(sorted[1],  sorted[5],  (lindex^(1))  > (lindex^(5)));
+    sorted[2]  = compare_and_select(sorted[2],  sorted[6],  (lindex^(2))  > (lindex^(6)));
+    sorted[3]  = compare_and_select(sorted[3],  sorted[7],  (lindex^(3))  > (lindex^(7)));
+    
+    sorted[0]  = compare_and_select(sorted[0],  sorted[2],  (lindex^(0))  > (lindex^(2)));
+    sorted[1]  = compare_and_select(sorted[1],  sorted[3],  (lindex^(1))  > (lindex^(3)));
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[1],  (lindex^(0))  > (lindex^(1)));
 
     return sorted[0];
 }
