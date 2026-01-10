@@ -53,9 +53,11 @@ T finalize_1024(uint lindex, T sorted0) {
     sorted2 = compare_and_select(sorted2, sorted6, (lindex^(2*128)) > (lindex^(6*128)));
     sorted3 = compare_and_select(sorted3, sorted7, (lindex^(3*128)) > (lindex^(7*128)));
 
+    barrier();
     sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*128)) > (lindex^(2*128)));
     sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*128)) > (lindex^(3*128)));
 
+    barrier();
     sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*128)) > (lindex^(1*128)));
 
     barrier();
@@ -70,6 +72,7 @@ T finalize_1024(uint lindex, T sorted0) {
 
     sorted0 = compare_and_select(sorted0, sorted2, (lindex^(0*32)) > (lindex^(2*32)));
     sorted1 = compare_and_select(sorted1, sorted3, (lindex^(1*32)) > (lindex^(3*32)));
+    barrier();
 
     sorted0 = compare_and_select(sorted0, sorted1, (lindex^(0*32)) > (lindex^(1*32)));
     barrier();
