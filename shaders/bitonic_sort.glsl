@@ -20,13 +20,15 @@ layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in ;
 shared T s_partially_sorted[2*1024];
 
 T finalize_1024(uint lindex, T sorted0) {
-
+    s_partially_sorted[lindex] = sorted0;
+    barrier();
+    
     for (uint m = 512; m > 0; m >>= 1) {
+        T partner = s_partially_sorted[lindex^m];
+        sorted0 = (lindex&m) != 0 ? max(sorted0, partner) : min(sorted0, partner);
         lindex ^= 1024;
         s_partially_sorted[lindex] = sorted0;
         barrier();
-        T partner = s_partially_sorted[lindex^m];
-        sorted0 = (lindex&m) != 0 ? max(sorted0, partner) : min(sorted0, partner);
     }
 
     return sorted0;
