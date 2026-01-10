@@ -11,6 +11,10 @@ layout (binding = 1, std430) buffer buffer_1 {
   uint[] b_values_out;
 };
 
+layout (binding = 2, std430) buffer buffer_2 {
+  uvec4[] b_debug;
+};
+
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in ;
 
 #define T uint
@@ -312,5 +316,8 @@ void sort_32768_to_65536() {
 } 
 
 void main() {
+    if (gl_WorkGroupID.x == 0) {
+        b_debug[gl_LocalInvocationIndex] = uvec4(gl_SubgroupInvocationID, gl_SubgroupID, gl_LocalInvocationIndex, gl_SubgroupSize);
+    }
     sort_32768_to_65536();
 }

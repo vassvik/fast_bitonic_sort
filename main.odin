@@ -53,6 +53,8 @@ bitonic_sort_base_program: Program
 bitonic_sort_base2_program: Program
 bitonic_sort_base3_program: Program
 
+debug_data: u32
+
 main :: proc() {
     glfw.SetErrorCallback(error_callback);
 
@@ -97,6 +99,9 @@ main :: proc() {
     gl.CreateBuffers(1, &bitonic_verify_data)
     gl.NamedBufferData(bitonic_verify_data, 32*size_of(u32), nil, gl.STATIC_READ)
 
+    gl.CreateBuffers(1, &debug_data)
+    gl.NamedBufferData(debug_data, size_of([4]u32)*1024, nil, gl.STATIC_READ)
+    
     bitonic_init_program := load_compute_file("shaders/bitonic_init.glsl")
     bitonic_verify_program := load_compute_file("shaders/bitonic_verify.glsl")
     bitonic_sort_base_program = load_compute_file("shaders/bitonic_sort_base.glsl")
@@ -182,6 +187,7 @@ main :: proc() {
 				    	gl.UseProgram(bitonic_sort_programs[stage])
 				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, bitonic_data[0]);
 				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, bitonic_data[1]);
+				        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 2, debug_data);
 
 				    	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
 						//block_query(fmt.tprintf("Sort %v", stage), step)
@@ -348,6 +354,15 @@ main :: proc() {
 		    }
 	    }
 	}
+    {
+    	data: [1024][4]u32
+    	gl.MemoryBarrier(gl.ALL_BARRIER_BITS)
+        gl.GetNamedBufferSubData(debug_data, 0, 1024*size_of([4]u32), &data[0])
+
+        for i in 0..<1024 {
+        	fmt.println(i, data[i])
+        }
+    }
 
     print_finished_queries()
 }
