@@ -20,12 +20,87 @@ T compare_and_select(T a, T b, bool select_max) {
 
 shared T s_partially_sorted[2*1024];
 
-T finalize_1024(uint lindex, T sorted0) {
-    /// sort1024
-    s_partially_sorted[lindex] = sorted0;
+
+
+void sort_16384_to_32768() {
+    uint lindex = gl_LocalInvocationIndex;
+    uint gid = 1024 * gl_WorkGroupID.x + lindex;
+
+    // 32K -> 1K
+    T sorted[32];
+    sorted[0]  = b_values_in[gid^(0*1024)];
+    sorted[1]  = b_values_in[gid^(1*1024)];
+    sorted[2]  = b_values_in[gid^(2*1024)];
+    sorted[3]  = b_values_in[gid^(3*1024)];
+    sorted[4]  = b_values_in[gid^(4*1024)];
+    sorted[5]  = b_values_in[gid^(5*1024)];
+    sorted[6]  = b_values_in[gid^(6*1024)];
+    sorted[7]  = b_values_in[gid^(7*1024)];
+    sorted[8]  = b_values_in[gid^(8*1024)];
+    sorted[9]  = b_values_in[gid^(9*1024)];
+    sorted[10] = b_values_in[gid^(10*1024)];
+    sorted[11] = b_values_in[gid^(11*1024)];
+    sorted[12] = b_values_in[gid^(12*1024)];
+    sorted[13] = b_values_in[gid^(13*1024)];
+    sorted[14] = b_values_in[gid^(14*1024)];
+    sorted[15] = b_values_in[gid^(15*1024)];
+    sorted[16] = b_values_in[gid^(0*1024)^32767];
+    sorted[17] = b_values_in[gid^(1*1024)^32767];
+    sorted[18] = b_values_in[gid^(2*1024)^32767];
+    sorted[19] = b_values_in[gid^(3*1024)^32767];
+    sorted[20] = b_values_in[gid^(4*1024)^32767];
+    sorted[21] = b_values_in[gid^(5*1024)^32767];
+    sorted[22] = b_values_in[gid^(6*1024)^32767];
+    sorted[23] = b_values_in[gid^(7*1024)^32767];
+    sorted[24] = b_values_in[gid^(8*1024)^32767];
+    sorted[25] = b_values_in[gid^(9*1024)^32767];
+    sorted[26] = b_values_in[gid^(10*1024)^32767];
+    sorted[27] = b_values_in[gid^(11*1024)^32767];
+    sorted[28] = b_values_in[gid^(12*1024)^32767];
+    sorted[29] = b_values_in[gid^(13*1024)^32767];
+    sorted[30] = b_values_in[gid^(14*1024)^32767];
+    sorted[31] = b_values_in[gid^(15*1024)^32767];
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[16], (gid&16384) != 0);
+    sorted[1]  = compare_and_select(sorted[1],  sorted[17], (gid&16384) != 0);
+    sorted[2]  = compare_and_select(sorted[2],  sorted[18], (gid&16384) != 0);
+    sorted[3]  = compare_and_select(sorted[3],  sorted[19], (gid&16384) != 0);
+    sorted[4]  = compare_and_select(sorted[4],  sorted[20], (gid&16384) != 0);
+    sorted[5]  = compare_and_select(sorted[5],  sorted[21], (gid&16384) != 0);
+    sorted[6]  = compare_and_select(sorted[6],  sorted[22], (gid&16384) != 0);
+    sorted[7]  = compare_and_select(sorted[7],  sorted[23], (gid&16384) != 0);
+    sorted[8]  = compare_and_select(sorted[8],  sorted[24], (gid&16384) != 0);
+    sorted[9]  = compare_and_select(sorted[9],  sorted[25], (gid&16384) != 0);
+    sorted[10] = compare_and_select(sorted[10], sorted[26], (gid&16384) != 0);
+    sorted[11] = compare_and_select(sorted[11], sorted[27], (gid&16384) != 0);
+    sorted[12] = compare_and_select(sorted[12], sorted[28], (gid&16384) != 0);
+    sorted[13] = compare_and_select(sorted[13], sorted[29], (gid&16384) != 0);
+    sorted[14] = compare_and_select(sorted[14], sorted[30], (gid&16384) != 0);
+    sorted[15] = compare_and_select(sorted[15], sorted[31], (gid&16384) != 0);
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[8],  (gid&8192)  != 0);
+    sorted[1]  = compare_and_select(sorted[1],  sorted[9],  (gid&8192)  != 0);
+    sorted[2]  = compare_and_select(sorted[2],  sorted[10], (gid&8192)  != 0);
+    sorted[3]  = compare_and_select(sorted[3],  sorted[11], (gid&8192)  != 0);
+    sorted[4]  = compare_and_select(sorted[4],  sorted[12], (gid&8192)  != 0);
+    sorted[5]  = compare_and_select(sorted[5],  sorted[13], (gid&8192)  != 0);
+    sorted[6]  = compare_and_select(sorted[6],  sorted[14], (gid&8192)  != 0);
+    sorted[7]  = compare_and_select(sorted[7],  sorted[15], (gid&8192)  != 0);
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[4],  (gid&4096)  != 0);
+    sorted[1]  = compare_and_select(sorted[1],  sorted[5],  (gid&4096)  != 0);
+    sorted[2]  = compare_and_select(sorted[2],  sorted[6],  (gid&4096)  != 0);
+    sorted[3]  = compare_and_select(sorted[3],  sorted[7],  (gid&4096)  != 0);
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[2],  (gid&2048)  != 0);
+    sorted[1]  = compare_and_select(sorted[1],  sorted[3],  (gid&2048)  != 0);
+
+    sorted[0]  = compare_and_select(sorted[0],  sorted[1],  (gid&1024)  != 0);
+
+    s_partially_sorted[lindex] = sorted[0];
     barrier();
 
-    T sorted[32];
+    // 1K -> 32
     sorted[0]  = s_partially_sorted[lindex^(0*32)];
     sorted[1]  = s_partially_sorted[lindex^(1*32)];
     sorted[2]  = s_partially_sorted[lindex^(2*32)];
@@ -99,6 +174,7 @@ T finalize_1024(uint lindex, T sorted0) {
     s_partially_sorted[lindex] = sorted[0];
     barrier();
 
+    // 32 -> 1
     sorted[0]  = s_partially_sorted[lindex^(0)];
     sorted[1]  = s_partially_sorted[lindex^(1)];
     sorted[2]  = s_partially_sorted[lindex^(2)];
@@ -168,86 +244,7 @@ T finalize_1024(uint lindex, T sorted0) {
 
     sorted[0]  = compare_and_select(sorted[0],  sorted[1],  (lindex^(0))  > (lindex^(1)));
 
-    return sorted[0];
-}
-
-
-void sort_16384_to_32768() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
-
-    T sorted[32];
-    sorted[0]  = b_values_in[gid^(0*1024)];
-    sorted[1]  = b_values_in[gid^(1*1024)];
-    sorted[2]  = b_values_in[gid^(2*1024)];
-    sorted[3]  = b_values_in[gid^(3*1024)];
-    sorted[4]  = b_values_in[gid^(4*1024)];
-    sorted[5]  = b_values_in[gid^(5*1024)];
-    sorted[6]  = b_values_in[gid^(6*1024)];
-    sorted[7]  = b_values_in[gid^(7*1024)];
-    sorted[8]  = b_values_in[gid^(8*1024)];
-    sorted[9]  = b_values_in[gid^(9*1024)];
-    sorted[10] = b_values_in[gid^(10*1024)];
-    sorted[11] = b_values_in[gid^(11*1024)];
-    sorted[12] = b_values_in[gid^(12*1024)];
-    sorted[13] = b_values_in[gid^(13*1024)];
-    sorted[14] = b_values_in[gid^(14*1024)];
-    sorted[15] = b_values_in[gid^(15*1024)];
-    sorted[16] = b_values_in[gid^(0*1024)^32767];
-    sorted[17] = b_values_in[gid^(1*1024)^32767];
-    sorted[18] = b_values_in[gid^(2*1024)^32767];
-    sorted[19] = b_values_in[gid^(3*1024)^32767];
-    sorted[20] = b_values_in[gid^(4*1024)^32767];
-    sorted[21] = b_values_in[gid^(5*1024)^32767];
-    sorted[22] = b_values_in[gid^(6*1024)^32767];
-    sorted[23] = b_values_in[gid^(7*1024)^32767];
-    sorted[24] = b_values_in[gid^(8*1024)^32767];
-    sorted[25] = b_values_in[gid^(9*1024)^32767];
-    sorted[26] = b_values_in[gid^(10*1024)^32767];
-    sorted[27] = b_values_in[gid^(11*1024)^32767];
-    sorted[28] = b_values_in[gid^(12*1024)^32767];
-    sorted[29] = b_values_in[gid^(13*1024)^32767];
-    sorted[30] = b_values_in[gid^(14*1024)^32767];
-    sorted[31] = b_values_in[gid^(15*1024)^32767];
-
-    sorted[0]  = compare_and_select(sorted[0],  sorted[16], (gid&16384) != 0);
-    sorted[1]  = compare_and_select(sorted[1],  sorted[17], (gid&16384) != 0);
-    sorted[2]  = compare_and_select(sorted[2],  sorted[18], (gid&16384) != 0);
-    sorted[3]  = compare_and_select(sorted[3],  sorted[19], (gid&16384) != 0);
-    sorted[4]  = compare_and_select(sorted[4],  sorted[20], (gid&16384) != 0);
-    sorted[5]  = compare_and_select(sorted[5],  sorted[21], (gid&16384) != 0);
-    sorted[6]  = compare_and_select(sorted[6],  sorted[22], (gid&16384) != 0);
-    sorted[7]  = compare_and_select(sorted[7],  sorted[23], (gid&16384) != 0);
-    sorted[8]  = compare_and_select(sorted[8],  sorted[24], (gid&16384) != 0);
-    sorted[9]  = compare_and_select(sorted[9],  sorted[25], (gid&16384) != 0);
-    sorted[10] = compare_and_select(sorted[10], sorted[26], (gid&16384) != 0);
-    sorted[11] = compare_and_select(sorted[11], sorted[27], (gid&16384) != 0);
-    sorted[12] = compare_and_select(sorted[12], sorted[28], (gid&16384) != 0);
-    sorted[13] = compare_and_select(sorted[13], sorted[29], (gid&16384) != 0);
-    sorted[14] = compare_and_select(sorted[14], sorted[30], (gid&16384) != 0);
-    sorted[15] = compare_and_select(sorted[15], sorted[31], (gid&16384) != 0);
-
-    sorted[0]  = compare_and_select(sorted[0],  sorted[8],  (gid&8192)  != 0);
-    sorted[1]  = compare_and_select(sorted[1],  sorted[9],  (gid&8192)  != 0);
-    sorted[2]  = compare_and_select(sorted[2],  sorted[10], (gid&8192)  != 0);
-    sorted[3]  = compare_and_select(sorted[3],  sorted[11], (gid&8192)  != 0);
-    sorted[4]  = compare_and_select(sorted[4],  sorted[12], (gid&8192)  != 0);
-    sorted[5]  = compare_and_select(sorted[5],  sorted[13], (gid&8192)  != 0);
-    sorted[6]  = compare_and_select(sorted[6],  sorted[14], (gid&8192)  != 0);
-    sorted[7]  = compare_and_select(sorted[7],  sorted[15], (gid&8192)  != 0);
-
-    sorted[0]  = compare_and_select(sorted[0],  sorted[4],  (gid&4096)  != 0);
-    sorted[1]  = compare_and_select(sorted[1],  sorted[5],  (gid&4096)  != 0);
-    sorted[2]  = compare_and_select(sorted[2],  sorted[6],  (gid&4096)  != 0);
-    sorted[3]  = compare_and_select(sorted[3],  sorted[7],  (gid&4096)  != 0);
-
-    sorted[0]  = compare_and_select(sorted[0],  sorted[2],  (gid&2048)  != 0);
-    sorted[1]  = compare_and_select(sorted[1],  sorted[3],  (gid&2048)  != 0);
-
-    sorted[0]  = compare_and_select(sorted[0],  sorted[1],  (gid&1024)  != 0);
-
-    //barrier();
-    b_values_out[gid] = finalize_1024(lindex, sorted[0]);
+    b_values_out[gid] = sorted[0];
 } 
 
 void main() {
