@@ -42,7 +42,7 @@ T finalize_1024(uint lindex, T sorted0) {
     barrier();
 
     T sorted[32];
-    sorted[0]  = sorted0;
+    sorted[0]  = s_partially_sorted[lindex^(0*32)];
     sorted[1]  = s_partially_sorted[lindex^(1*32)];
     sorted[2]  = s_partially_sorted[lindex^(2*32)];
     sorted[3]  = s_partially_sorted[lindex^(3*32)];
