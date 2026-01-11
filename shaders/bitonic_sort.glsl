@@ -12,8 +12,6 @@ layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in ;
 
 #define T uint
 
-#define USE<stage>
-
 T compare_and_select(T a, T b, bool select_max) {
     return select_max ? max(a, b) : min(a, b);
 }
