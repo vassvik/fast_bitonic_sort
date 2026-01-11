@@ -1,0 +1,1 @@
+Odin\odin.exe run . -show-timings -o:speed -no-bounds-check -use-separate-modules

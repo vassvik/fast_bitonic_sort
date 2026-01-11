@@ -1,0 +1,1 @@
+cl /MD /std:c11 /O2 main.c glad.c /Iinclude /link user32.lib gdi32.lib shell32.lib opengl32.lib glfw3.lib
