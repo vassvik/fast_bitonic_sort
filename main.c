@@ -47,8 +47,8 @@ int main(void) {
 
     GLuint bitonic_data[2];
     glCreateBuffers(2, bitonic_data);
-    glNamedBufferData(bitonic_data[0], sizeof(uint32_t)*32768, NULL, GL_STATIC_READ);
-    glNamedBufferData(bitonic_data[1], sizeof(uint32_t)*32768, NULL, GL_STATIC_READ);
+    glNamedBufferData(bitonic_data[0], sizeof(uint32_t)*32768*16, NULL, GL_STATIC_READ);
+    glNamedBufferData(bitonic_data[1], sizeof(uint32_t)*32768*16, NULL, GL_STATIC_READ);
 
     GLuint bitonic_verify_data;
     glCreateBuffers(1, &bitonic_verify_data);
@@ -58,7 +58,7 @@ int main(void) {
     GLuint bitonic_verify_program; if (!gl_load_compute_file("shaders/bitonic_verify.glsl", &bitonic_verify_program)) goto cleanup;
     GLuint bitonic_sort_program; if (!gl_load_compute_file("shaders/bitonic_sort.glsl", &bitonic_sort_program)) goto cleanup;
 
-    uint32_t N = 32*1024;
+    uint32_t N = 32*1024*16;
 
     for (uint32_t step = 0; true; step++) {
         if ((step % 10000) == 0) printf("%d steps\n", step);
@@ -101,7 +101,7 @@ int main(void) {
             uint32_t is_sorted[32];
             glMemoryBarrier(GL_BUFFER_UPDATE_BARRIER_BIT);
             glGetNamedBufferSubData(bitonic_verify_data, 0, sizeof(is_sorted), is_sorted);
-            for (uint32_t i = 0; i < 32; i++) {
+            for (uint32_t i = 0; i < 16; i++) {
                 if ((1u << i) > N) continue;
                 if (!is_sorted[i]) printf("%u Not Sorted %u %u\n", step, i, 1u << i);
             }

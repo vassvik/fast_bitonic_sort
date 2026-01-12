@@ -46,8 +46,8 @@ main :: proc() {
 
 	bitonic_data: [2]u32
     gl.CreateBuffers(2, &bitonic_data[0])
-    gl.NamedBufferData(bitonic_data[0], size_of(u32)*32768, nil, gl.STATIC_READ)
-    gl.NamedBufferData(bitonic_data[1], size_of(u32)*32768, nil, gl.STATIC_READ)
+    gl.NamedBufferData(bitonic_data[0], size_of(u32)*32768*16, nil, gl.STATIC_READ)
+    gl.NamedBufferData(bitonic_data[1], size_of(u32)*32768*16, nil, gl.STATIC_READ)
 
     bitonic_verify_data: u32
     gl.CreateBuffers(1, &bitonic_verify_data)
@@ -57,10 +57,10 @@ main :: proc() {
     bitonic_verify_program := load_compute_file("shaders/bitonic_verify.glsl")
     bitonic_sort_program := load_compute_file("shaders/bitonic_sort.glsl")
 
-    N := u32(32*1024)
+    N := u32(32*16*1024)
 	for step := 0; true; step += 1 {
 		if (step % 10000) == 0 do fmt.println(step, "steps")
-		
+
     	if glfw.WindowShouldClose(window) do break
         glfw.PollEvents();
         if b32(glfw.GetKey(window, glfw.KEY_ESCAPE)) {
@@ -99,7 +99,7 @@ main :: proc() {
 	    	is_sorted: [32]b32
 	    	gl.MemoryBarrier(gl.BUFFER_UPDATE_BARRIER_BIT)
 	        gl.GetNamedBufferSubData(bitonic_verify_data, 0, 4*32, &is_sorted)
-	        for i in 0..<32 {
+	        for i in 0..<16 {
 	        	if (1<<u32(i)) > N do continue
 	        	if !is_sorted[i] do fmt.println(step, "Not Sorted", i, 1<<u32(i))
 	        }
