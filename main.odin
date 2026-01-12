@@ -58,7 +58,9 @@ main :: proc() {
     bitonic_sort_program := load_compute_file("shaders/bitonic_sort.glsl")
 
     N := u32(32*1024)
-	for step := 0; step < 2000; step += 1 {
+	for step := 0; true; step += 1 {
+		if (step % 10000) == 0 do fmt.println(step, "steps")
+		
     	if glfw.WindowShouldClose(window) do break
         glfw.PollEvents();
         if b32(glfw.GetKey(window, glfw.KEY_ESCAPE)) {

@@ -60,7 +60,8 @@ int main(void) {
 
     uint32_t N = 32*1024;
 
-    for (uint32_t step = 0; step < 2000; step++) {
+    for (uint32_t step = 0; true; step++) {
+        if ((steps % 10000) == 0) printf("%d steps\n", step);
         if (glfwWindowShouldClose(window)) break;
 
         glfwPollEvents();
