@@ -104,46 +104,38 @@ T finalize_512(uint lindex, T sorted0) {
 }
 
 T finalize_1024(uint lindex, T sorted0) {
-    T sorted[8];
-    sorted[0] = sorted0;
-
     /// sort1024
-    s_partially_sorted[lindex] = sorted[0];
+    s_partially_sorted[lindex] = sorted0;
     barrier();
 
-    sorted[1] = s_partially_sorted[lindex^(1*128)];
-    sorted[2] = s_partially_sorted[lindex^(2*128)];
-    sorted[3] = s_partially_sorted[lindex^(3*128)];
-    sorted[4] = s_partially_sorted[lindex^(4*128)];
-    sorted[5] = s_partially_sorted[lindex^(5*128)];
-    sorted[6] = s_partially_sorted[lindex^(6*128)];
-    sorted[7] = s_partially_sorted[lindex^(7*128)];
+    {
+        // 1024 -> 32
+        uint idx = gl_SubgroupInvocationID*32 + gl_SubgroupID;
+        uint x = s_partially_sorted[idx]; 
 
-    sorted[0] = compare_and_select(sorted[0], sorted[4], (lindex&512) != 0);
-    sorted[1] = compare_and_select(sorted[1], sorted[5], (lindex&512) != 0);
-    sorted[2] = compare_and_select(sorted[2], sorted[6], (lindex&512) != 0);
-    sorted[3] = compare_and_select(sorted[3], sorted[7], (lindex&512) != 0);
 
-    sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&256) != 0);
-    sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&256) != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 16), (gl_SubgroupInvocationID&16) != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 8),  (gl_SubgroupInvocationID&8)  != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 4),  (gl_SubgroupInvocationID&4)  != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 2),  (gl_SubgroupInvocationID&2)  != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 1),  (gl_SubgroupInvocationID&1)  != 0);
 
-    sorted[0] = compare_and_select(sorted[0], sorted[1], (lindex&128) != 0); 
-
-    s_partially_sorted2[(lindex)] = sorted[0];
+        s_partially_sorted2[idx] = x;
+    }
     barrier();
+    {
+        // 32 -> 1
+        uint idx = gl_SubgroupID*32 + gl_SubgroupInvocationID;
+        uint x = s_partially_sorted2[idx];
 
-    sorted[1] = s_partially_sorted2[lindex^(1*32)];
-    sorted[2] = s_partially_sorted2[lindex^(2*32)];
-    sorted[3] = s_partially_sorted2[lindex^(3*32)];
-
-    sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&64) != 0); 
-    sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&64) != 0); 
-
-    sorted[0] = compare_and_select(sorted[0], sorted[1], (lindex&32) != 0); 
-
-    sorted[0] = finalize_wave(sorted[0]);
-
-    return sorted[0];
+        x = compare_and_select(x, subgroupShuffleXor(x, 16), (gl_SubgroupInvocationID&16) != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 8),  (gl_SubgroupInvocationID&8)  != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 4),  (gl_SubgroupInvocationID&4)  != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 2),  (gl_SubgroupInvocationID&2)  != 0);
+        x = compare_and_select(x, subgroupShuffleXor(x, 1),  (gl_SubgroupInvocationID&1)  != 0);
+      
+        return x;
+    }
 }
 
 void sort_1_to_1024() {
