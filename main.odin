@@ -29,9 +29,9 @@ Bitonic_Sorting_Stages :: enum u32 {
 	_4096 = 4096,
 	_8192 = 8192,
 	_16384 = 16384,
-	//_32768 = 32768,
-	_32768_1 = 32768+1,
-	_32768_2 = 32768+2,
+	_32768 = 32768,
+	//_32768_1 = 32768+1,
+	//_32768_2 = 32768+2,
 	//_65536 = 65536,
 	_65536_1 = 65536+1,
 	_65536_2 = 65536+2,
@@ -289,9 +289,9 @@ main :: proc() {
 							if stage >= ._4096 do sort_pass(N, ._4096)
 							if stage >= ._8192 do sort_pass(N, ._8192)
 							if stage >= ._16384 do sort_pass(N, ._16384)
-							//if N >  16*1024 do sort_pass(N, ._32768)
-							if stage >= ._32768_1 do sort_pass(N, ._32768_1)
-							if stage >= ._32768_2 do sort_pass(N, ._32768_2)
+							if stage >= ._32768 do sort_pass(N, ._32768)
+							//if stage >= ._32768_1 do sort_pass(N, ._32768_1)
+							//if stage >= ._32768_2 do sort_pass(N, ._32768_2)
 							//if N >  32*1024 do sort_pass(N, ._65536)
 							if stage >= ._65536_1 do sort_pass(N, ._65536_1)
 							if stage >= ._65536_2 do sort_pass(N, ._65536_2)
@@ -307,9 +307,9 @@ main :: proc() {
 							if stage >= ._4096 do sort2_pass(N, 1, ._4096)
 							if stage >= ._8192 do sort2_pass(N, 1, ._8192)
 							if stage >= ._16384 do sort2_pass(N, 1, ._16384)
-							////if N >  16*1024 do sort2_pass(N, ._32768)
-							if stage >= ._32768_1 do sort2_pass(N, 2, ._32768_1)
-							if stage >= ._32768_2 do sort2_pass(N, 1, ._32768_2)
+							if stage >= ._32768 do sort2_pass(N, 1, ._32768)
+							//if stage >= ._32768_1 do sort2_pass(N, 2, ._32768_1)
+							//if stage >= ._32768_2 do sort2_pass(N, 1, ._32768_2)
 							////if N >  32*1024 do sort2_pass(N, ._65536)
 							if stage >= ._65536_1 do sort2_pass(N, 2, ._65536_1)
 							if stage >= ._65536_2 do sort2_pass(N, 1, ._65536_2)
@@ -338,7 +338,7 @@ main :: proc() {
 		    			block_query("Verify", step)
 				        gl.DispatchCompute(N / 512, 1, 1)
 		    		}
-		    		if stage != ._32768_1 && stage != ._65536_1 && stage != ._131072_1 && stage != ._262144_1 {	
+		    		if /*stage != ._32768_1 && */stage != ._65536_1 && stage != ._131072_1 && stage != ._262144_1 {	
 		        		//GL_LABEL_BLOCK("Download Result")	
 
 				    	is_sorted: [32]b32
