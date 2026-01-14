@@ -536,30 +536,31 @@ void sort_131072_to_262144() {
 }
 
 void sort_131072_to_262144_1() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
+    uint idx0 = gl_SubgroupInvocationID;
+    uint idx = 8192*idx0 + gl_WorkGroupID.x*32 + gl_SubgroupID;
+    if (idx >= 131072) idx ^= 131071;
 
-    T sorted[16];
-    for (uint i = 0; i < 8; i++) sorted[i] = b_values_in[gid^(i*16384)];
-    for (uint i = 0; i < 8; i++) sorted[8+i] = b_values_in[gid^(i*16384)^262143];
+    uint x = b_values_in[idx];
+    x = compare_and_select(x, subgroupShuffleXor(x, 16), (idx&131072) != 0);
+    
+    uint y = subgroupShuffleXor(x, 15);
+    if (idx0 >= 16) x = y;
 
-    for (uint i = 0; i < 8; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&131072) != 0); 
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&65536) != 0); 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&32768) != 0); 
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&16384) != 0); 
-
-    b_values_out[gid] = sorted[0];
+    x = compare_and_select(x, subgroupShuffleXor(x, 8),  (idx&65536)  != 0);
+    x = compare_and_select(x, subgroupShuffleXor(x, 4),  (idx&32768)  != 0);
+    x = compare_and_select(x, subgroupShuffleXor(x, 2),  (idx&16384)  != 0);
+    x = compare_and_select(x, subgroupShuffleXor(x, 1),  (idx&8192)  != 0);
+    b_values_out[idx] = x;
 } 
 
 void sort_131072_to_262144_2() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
-    T sorted[16];
-    for (uint i = 0; i < 8; i++) sorted[i] = b_values_in[gid^(i*1024)];
-    for (uint i = 0; i < 8; i++) sorted[8+i] = b_values_in[gid^(i*1024)^8192];
+    T sorted[8];
+    for (uint i = 0; i < 4; i++) sorted[i] = b_values_in[gid^(i*1024)];
+    for (uint i = 0; i < 4; i++) sorted[4+i] = b_values_in[gid^(i*1024)^4096];
 
-    for (uint i = 0; i < 8; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);  // 8192
     for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  // 8192
     for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
     for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
