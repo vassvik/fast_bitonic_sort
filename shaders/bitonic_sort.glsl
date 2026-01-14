@@ -536,21 +536,55 @@ void sort_131072_to_262144() {
 }
 
 void sort_131072_to_262144_1() {
-    uint idx0 = gl_SubgroupInvocationID;
-    uint idx = 8192*idx0 + gl_WorkGroupID.x*32 + gl_SubgroupID;
-    if (idx >= 131072) idx ^= 131071;
+    uint idx = 8192*gl_SubgroupID + gl_WorkGroupID.x*32 + gl_SubgroupInvocationID;
 
-    uint x = b_values_in[idx];
-    x = compare_and_select(x, subgroupShuffleXor(x, 16), (idx&131072) != 0);
+    uint x0 = b_values_in[idx];
+    uint x1 = b_values_in[idx^262143];
+
+    uint x = compare_and_select(x0, x1, (idx&131072) != 0);
+
+    uint lindex = gl_SubgroupID*32 + gl_SubgroupInvocationID;
+    s_partially_sorted[lindex] = x;
+    barrier();
+
+    uint sorted[16];
+    sorted[0] = x;
+    sorted[1] = s_partially_sorted[lindex^(1*32)];
+    sorted[2] = s_partially_sorted[lindex^(2*32)];
+    sorted[3] = s_partially_sorted[lindex^(3*32)];
+    sorted[4] = s_partially_sorted[lindex^(4*32)];
+    sorted[5] = s_partially_sorted[lindex^(5*32)];
+    sorted[6] = s_partially_sorted[lindex^(6*32)];
+    sorted[7] = s_partially_sorted[lindex^(7*32)];
+    sorted[8] = s_partially_sorted[lindex^(8*32)];
+    sorted[9] = s_partially_sorted[lindex^(9*32)];
+    sorted[10] = s_partially_sorted[lindex^(10*32)];
+    sorted[11] = s_partially_sorted[lindex^(11*32)];
+    sorted[12] = s_partially_sorted[lindex^(12*32)];
+    sorted[13] = s_partially_sorted[lindex^(13*32)];
+    sorted[14] = s_partially_sorted[lindex^(14*32)];
+    sorted[15] = s_partially_sorted[lindex^(15*32)];
+
+    sorted[0] = compare_and_select(sorted[0], sorted[8], (lindex&256) != 0);
+    sorted[1] = compare_and_select(sorted[1], sorted[9], (lindex&256) != 0);
+    sorted[2] = compare_and_select(sorted[2], sorted[10], (lindex&256) != 0);
+    sorted[3] = compare_and_select(sorted[3], sorted[11], (lindex&256) != 0);
+    sorted[4] = compare_and_select(sorted[4], sorted[12], (lindex&256) != 0);
+    sorted[5] = compare_and_select(sorted[5], sorted[13], (lindex&256) != 0);
+    sorted[6] = compare_and_select(sorted[6], sorted[14], (lindex&256) != 0);
+    sorted[7] = compare_and_select(sorted[7], sorted[15], (lindex&256) != 0);
+
+    sorted[0] = compare_and_select(sorted[0], sorted[4], (lindex&128) != 0);
+    sorted[1] = compare_and_select(sorted[1], sorted[5], (lindex&128) != 0);
+    sorted[2] = compare_and_select(sorted[2], sorted[6], (lindex&128) != 0);
+    sorted[3] = compare_and_select(sorted[3], sorted[7], (lindex&128) != 0);
+
+    sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&64) != 0);
+    sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&64) != 0);
     
-    uint y = subgroupShuffleXor(x, 15);
-    if (idx0 >= 16) x = y;
+    sorted[0] = compare_and_select(sorted[0], sorted[1], (lindex&32) != 0);
 
-    x = compare_and_select(x, subgroupShuffleXor(x, 8),  (idx&65536)  != 0);
-    x = compare_and_select(x, subgroupShuffleXor(x, 4),  (idx&32768)  != 0);
-    x = compare_and_select(x, subgroupShuffleXor(x, 2),  (idx&16384)  != 0);
-    x = compare_and_select(x, subgroupShuffleXor(x, 1),  (idx&8192)  != 0);
-    b_values_out[idx] = x;
+    b_values_out[idx] = sorted[0];
 } 
 
 void sort_131072_to_262144_2() {
