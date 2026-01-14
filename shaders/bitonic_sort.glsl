@@ -538,34 +538,34 @@ void sort_131072_to_262144() {
 void sort_131072_to_262144_1() {
     uint idx = 8192*gl_SubgroupID + gl_WorkGroupID.x*32 + gl_SubgroupInvocationID;
 
-    uint x0 = b_values_in[idx];
-    uint x1 = b_values_in[idx^65536];
-    uint x2 = b_values_in[idx^262143];
-    uint x3 = b_values_in[idx^65536^262143];
+    uint x0 = b_values_in[idx^(0*32768)];
+    uint x1 = b_values_in[idx^(1*32768)];
+    uint x2 = b_values_in[idx^(2*32768)];
+    uint x3 = b_values_in[idx^(3*32768)];
+    uint x4 = b_values_in[idx^(0*32768)^262143];
+    uint x5 = b_values_in[idx^(1*32768)^262143];
+    uint x6 = b_values_in[idx^(2*32768)^262143];
+    uint x7 = b_values_in[idx^(3*32768)^262143];
 
-    x0 = compare_and_select(x0, x2, (idx&131072) != 0);
-    x1 = compare_and_select(x1, x3, (idx&131072) != 0);
+    x0 = compare_and_select(x0, x4, (idx&131072) != 0);
+    x1 = compare_and_select(x1, x5, (idx&131072) != 0);
+    x2 = compare_and_select(x2, x6, (idx&131072) != 0);
+    x3 = compare_and_select(x3, x7, (idx&131072) != 0);
+
+    x0 = compare_and_select(x0, x2, (idx&65536) != 0);
+    x1 = compare_and_select(x1, x3, (idx&65536) != 0);
     
-    x0 = compare_and_select(x0, x1, (idx&65536) != 0);
+    x0 = compare_and_select(x0, x1, (idx&32768) != 0);
 
     uint lindex = gl_SubgroupID*32 + gl_SubgroupInvocationID;
     s_partially_sorted[lindex] = x0;
     barrier();
 
-    uint sorted[8];
+    uint sorted[4];
     sorted[0] = x0;
     sorted[1] = s_partially_sorted[lindex^(1*32)];
     sorted[2] = s_partially_sorted[lindex^(2*32)];
     sorted[3] = s_partially_sorted[lindex^(3*32)];
-    sorted[4] = s_partially_sorted[lindex^(4*32)];
-    sorted[5] = s_partially_sorted[lindex^(5*32)];
-    sorted[6] = s_partially_sorted[lindex^(6*32)];
-    sorted[7] = s_partially_sorted[lindex^(7*32)];
-
-    sorted[0] = compare_and_select(sorted[0], sorted[4], (lindex&128) != 0);
-    sorted[1] = compare_and_select(sorted[1], sorted[5], (lindex&128) != 0);
-    sorted[2] = compare_and_select(sorted[2], sorted[6], (lindex&128) != 0);
-    sorted[3] = compare_and_select(sorted[3], sorted[7], (lindex&128) != 0);
 
     sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&64) != 0);
     sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&64) != 0);
