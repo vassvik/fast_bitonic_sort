@@ -419,36 +419,56 @@ void sort_32768_to_65536() {
 } 
 
 void sort_32768_to_65536_1() {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * gl_WorkGroupID.x + lindex;
+    uint idx = 2048 * gl_SubgroupID + (gl_WorkGroupID.x&63)*32 + 1024*(gl_WorkGroupID.x & ~63) + gl_SubgroupInvocationID;
 
-    T sorted[8];
-    for (uint i = 0; i < 4; i++) {
-        uint idx = gid^(i*8192);
-        sorted[i] = b_values_in[idx];
-        sorted[4+i] = b_values_in[idx^65535];
-    }
+    uint x0 = b_values_in[idx^(0*8192)];
+    uint x1 = b_values_in[idx^(1*8192)];
+    uint x2 = b_values_in[idx^(2*8192)];
+    uint x3 = b_values_in[idx^(3*8192)];
+    uint x4 = b_values_in[idx^(0*8192)^65535];
+    uint x5 = b_values_in[idx^(1*8192)^65535];
+    uint x6 = b_values_in[idx^(2*8192)^65535];
+    uint x7 = b_values_in[idx^(3*8192)^65535];
 
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&32768) != 0); 
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&16384) != 0); 
-    for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&8192) != 0); 
+    x0 = compare_and_select(x0, x4, (idx&32768) != 0);
+    x1 = compare_and_select(x1, x5, (idx&32768) != 0);
+    x2 = compare_and_select(x2, x6, (idx&32768) != 0);
+    x3 = compare_and_select(x3, x7, (idx&32768) != 0);
 
-    b_values_out[gid] = sorted[0];
+    x0 = compare_and_select(x0, x2, (idx&16384) != 0);
+    x1 = compare_and_select(x1, x3, (idx&16384) != 0);
+    
+    x0 = compare_and_select(x0, x1, (idx&8192) != 0);
+
+    uint lindex = gl_SubgroupID*32 + gl_SubgroupInvocationID;
+    s_partially_sorted[lindex] = x0;
+    barrier();
+
+    uint sorted[4];
+    sorted[0] = x0;
+    sorted[1] = s_partially_sorted[lindex^(1*32)];
+    sorted[2] = s_partially_sorted[lindex^(2*32)];
+    sorted[3] = s_partially_sorted[lindex^(3*32)];
+
+    sorted[0] = compare_and_select(sorted[0], sorted[2], (lindex&64) != 0);
+    sorted[1] = compare_and_select(sorted[1], sorted[3], (lindex&64) != 0);
+
+    sorted[0] = compare_and_select(sorted[0], sorted[1], (lindex&32) != 0);
+
+    b_values_out[idx] = sorted[0];
 } 
 
 void sort_32768_to_65536_2() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
-    T sorted[8];
-    for (uint i = 0; i < 4; i++) {
+    T sorted[2];
+    for (uint i = 0; i < 1; i++) {
         uint idx = gid^(i*1024);
         sorted[i] = b_values_in[idx];
-        sorted[4+i] = b_values_in[idx^4096];
+        sorted[1+i] = b_values_in[idx^1024];
     }
 
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  // 8192
-    for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
     for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
 
     b_values_out[gid] = finalize_1024(lindex, sorted[0]);
@@ -480,7 +500,6 @@ void sort_65536_to_131072() {
 }
 
 void sort_65536_to_131072_1() {
-    //uint idx = 8192*gl_SubgroupID + gl_WorkGroupID.x*32 + gl_SubgroupInvocationID;
     uint idx = 4096 * gl_SubgroupID + (gl_WorkGroupID.x&127)*32 + 1024*(gl_WorkGroupID.x & ~127) + gl_SubgroupInvocationID;
 
     uint x0 = b_values_in[idx^(0*16384)];
@@ -560,7 +579,6 @@ void sort_131072_to_262144() {
 }
 
 void sort_131072_to_262144_1() {
-    //uint idx = 8192*gl_SubgroupID + gl_WorkGroupID.x*32 + gl_SubgroupInvocationID;
     uint idx = 8192 * gl_SubgroupID + (gl_WorkGroupID.x&255)*32 + 1024*(gl_WorkGroupID.x & ~255) + gl_SubgroupInvocationID;
 
     uint x0 = b_values_in[idx^(0*32768)];
