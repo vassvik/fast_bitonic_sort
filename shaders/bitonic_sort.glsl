@@ -480,7 +480,8 @@ void sort_65536_to_131072() {
 }
 
 void sort_65536_to_131072_1() {
-    uint idx = 8192*gl_SubgroupID + gl_WorkGroupID.x*32 + gl_SubgroupInvocationID;
+    //uint idx = 8192*gl_SubgroupID + gl_WorkGroupID.x*32 + gl_SubgroupInvocationID;
+    uint idx = 4096 * gl_SubgroupID + (gl_WorkGroupID.x&127)*32 + 1024*(gl_WorkGroupID.x & ~127) + gl_SubgroupInvocationID;
 
     uint x0 = b_values_in[idx^(0*16384)];
     uint x1 = b_values_in[idx^(1*16384)];
@@ -560,7 +561,8 @@ void sort_131072_to_262144() {
 }
 
 void sort_131072_to_262144_1() {
-    uint idx = 8192*gl_SubgroupID + gl_WorkGroupID.x*32 + gl_SubgroupInvocationID;
+    //uint idx = 8192*gl_SubgroupID + gl_WorkGroupID.x*32 + gl_SubgroupInvocationID;
+    uint idx = 8192 * gl_SubgroupID + (gl_WorkGroupID.x&255)*32 + 1024*(gl_WorkGroupID.x & ~255) + gl_SubgroupInvocationID;
 
     uint x0 = b_values_in[idx^(0*32768)];
     uint x1 = b_values_in[idx^(1*32768)];
