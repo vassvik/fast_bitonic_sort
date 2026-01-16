@@ -524,11 +524,10 @@ void sort_65536_to_131072_2() {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * gl_WorkGroupID.x + lindex;
 
-    T sorted[8];
-    for (uint i = 0; i < 4; i++) sorted[i] = b_values_in[gid^(i*1024)];
-    for (uint i = 0; i < 4; i++) sorted[4+i] = b_values_in[gid^(i*1024)^4096];
+    T sorted[4];
+    for (uint i = 0; i < 2; i++) sorted[i] = b_values_in[gid^(i*1024)];
+    for (uint i = 0; i < 2; i++) sorted[2+i] = b_values_in[gid^(i*1024)^2048];
 
-    for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);  // 8192
     for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
     for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
 
