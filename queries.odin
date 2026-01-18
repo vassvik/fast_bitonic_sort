@@ -44,7 +44,7 @@ query_end :: proc(q: Query) {
     append(&active_queries, q)
 }
 
-process_active_queries :: proc(timestep: int) {
+process_active_queries :: proc(wait := false) {
     for &query, i in active_queries {
         if query.completed do continue
         
@@ -52,9 +52,14 @@ process_active_queries :: proc(timestep: int) {
         gl.GetQueryObjectui64v(query.start_query, gl.QUERY_RESULT_AVAILABLE, &ready1);
         gl.GetQueryObjectui64v(query.end_query, gl.QUERY_RESULT_AVAILABLE, &ready2);
 
-        if ready1 == 1 && ready2 == 1 {
-            gl.GetQueryObjectui64v(query.start_query, gl.QUERY_RESULT_NO_WAIT, &ready1);
-            gl.GetQueryObjectui64v(query.end_query, gl.QUERY_RESULT_NO_WAIT, &ready2);
+        if (ready1 == 1 && ready2 == 1) || wait {
+            if wait {
+                gl.GetQueryObjectui64v(query.start_query, gl.QUERY_RESULT, &ready1);
+                gl.GetQueryObjectui64v(query.end_query, gl.QUERY_RESULT, &ready2);
+            } else {
+                gl.GetQueryObjectui64v(query.start_query, gl.QUERY_RESULT_NO_WAIT, &ready1);
+                gl.GetQueryObjectui64v(query.end_query, gl.QUERY_RESULT_NO_WAIT, &ready2);
+            }
 
             if q, ok := &finished_queries[query.name]; ok {
                 for len(q) <= int(query.timestep) {
@@ -63,9 +68,9 @@ process_active_queries :: proc(timestep: int) {
                 s := Summed_Query_Sample{q[query.timestep].sum + int(ready2-ready1), q[query.timestep].count+1}
                 q[query.timestep] = s
             } else {
-                finished_queries[query.name] = make([dynamic]Summed_Query_Sample)
+                finished_queries[query.name] = make([dynamic]Summed_Query_Sample, query.timestep+1)
                 s := Summed_Query_Sample{int(ready2-ready1), 1}
-                append(&finished_queries[query.name], s)
+                finished_queries[query.name][query.timestep] = s
                 //if query.name == "jacobi vertex 1" do fmt.println("a", s, query)
             }
 
@@ -108,6 +113,9 @@ print_finished_queries :: proc() {
         sb := strings.builder_make()
         for s, timestep in query {
             time := f64(s.sum) / f64(s.count)
+            if s.count == 0 {
+                fmt.println(name, query)
+            }
             //fmt.printf("%d %.6f %.6f %v\n", timestep,  time * 1.0e-6, bandwidth, s)
             fmt.sbprintf(&sb, "%d %.9f\n", timestep,  time*1.0e-9)
         }

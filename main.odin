@@ -151,7 +151,7 @@ main :: proc() {
 	    	for step := 0; step < 400; step += 1 {
 		    	if glfw.WindowShouldClose(window) do break
 
-		    	process_active_queries(step)
+		    	process_active_queries()
 
 		        glfw.PollEvents();
 
@@ -357,6 +357,7 @@ main :: proc() {
 	    }
 	}
 
+	process_active_queries(true)
     print_finished_queries()
 }
 
