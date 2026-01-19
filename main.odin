@@ -31,16 +31,16 @@ Bitonic_Sorting_Stages :: enum u32 {
 	_16384 = 16384,
 	//_32768 = 32768,
 	_32768_1 = 32768+1,
-	_32768_2 = 32768+2,
+	//_32768_2 = 32768+2,
 	//_65536 = 65536,
 	_65536_1 = 65536+1,
-	_65536_2 = 65536+2,
+	//_65536_2 = 65536+2,
 	//_131072 = 131072,
 	_131072_1 = 131072+1,
-	_131072_2 = 131072+2,
+	//_131072_2 = 131072+2,
 	//_262144 = 262144,
 	_262144_1 = 262144+1,
-	_262144_2 = 262144+2,
+	//_262144_2 = 262144+2,
 }
 
 
@@ -52,6 +52,7 @@ bitonic_data: [2]u32
 bitonic_sort_base_program: Program
 bitonic_sort_base2_program: Program
 bitonic_sort_base3_program: Program
+bitonic_sort_single_program: Program
 
 main :: proc() {
     glfw.SetErrorCallback(error_callback);
@@ -102,6 +103,7 @@ main :: proc() {
     bitonic_sort_base_program = load_compute_file("shaders/bitonic_sort_base.glsl")
     bitonic_sort_base2_program = load_compute_file("shaders/bitonic_sort_base2.glsl")
     bitonic_sort_base3_program = load_compute_file("shaders/bitonic_sort_base3.glsl")
+    bitonic_sort_single_program = load_compute_file("shaders/bitonic_sort_single.glsl")
 
     {
         filename := "shaders/bitonic_sort.glsl"
@@ -142,12 +144,13 @@ main :: proc() {
     outer: 
     //for N := u32(1024); N <= 32768 + 0*256*1024; N *= 2 {
     for stage in Bitonic_Sorting_Stages {
-    	if stage > ._262144_2 do continue
+    	if stage > ._262144_1 do continue
     	N := (u32(stage)/1024) * 1024
 
     	fmt.println("N =", N)
 	    for M := u32(0); M < 1 + 0*bits.log2(N); M += 1 {
 	    	fmt.println("M =", M)
+	    	M = bits.log2(N)-1
 	    	for step := 0; step < 400; step += 1 {
 		    	if glfw.WindowShouldClose(window) do break
 
@@ -283,44 +286,54 @@ main :: proc() {
 								}
 								//fmt.println()
 							}
-						} else if true {
-							if stage >= ._1024 do sort_pass(N, ._1024)
-							if stage >= ._2048 do sort_pass(N, ._2048)
-							if stage >= ._4096 do sort_pass(N, ._4096)
-							if stage >= ._8192 do sort_pass(N, ._8192)
-							if stage >= ._16384 do sort_pass(N, ._16384)
-							//if N >  16*1024 do sort_pass(N, ._32768)
-							if stage >= ._32768_1 do sort_pass(N, ._32768_1)
-							if stage >= ._32768_2 do sort_pass(N, ._32768_2)
-							//if N >  32*1024 do sort_pass(N, ._65536)
-							if stage >= ._65536_1 do sort_pass(N, ._65536_1)
-							if stage >= ._65536_2 do sort_pass(N, ._65536_2)
-							//if N >  64*1024 do sort_pass(N, ._131072)
-							if stage >= ._131072_1 do sort_pass(N, ._131072_1)
-							if stage >= ._131072_2 do sort_pass(N, ._131072_2)
-							//if N > 128*1024 do sort_pass(N, ._262144)
-							if stage >= ._262144_1 do sort_pass(N, ._262144_1)
-							if stage >= ._262144_2 do sort_pass(N, ._262144_2)
+						} else if false {
+							//if stage >= ._1024 do sort_pass(N, ._1024)
+							//if stage >= ._2048 do sort_pass(N, ._2048)
+							//if stage >= ._4096 do sort_pass(N, ._4096)
+							//if stage >= ._8192 do sort_pass(N, ._8192)
+							//if stage >= ._16384 do sort_pass(N, ._16384)
+							////if N >  16*1024 do sort_pass(N, ._32768)
+							//if stage >= ._32768_1 do sort_pass(N, ._32768_1)
+							//if stage >= ._32768_2 do sort_pass(N, ._32768_2)
+							////if N >  32*1024 do sort_pass(N, ._65536)
+							//if stage >= ._65536_1 do sort_pass(N, ._65536_1)
+							//if stage >= ._65536_2 do sort_pass(N, ._65536_2)
+							////if N >  64*1024 do sort_pass(N, ._131072)
+							//if stage >= ._131072_1 do sort_pass(N, ._131072_1)
+							//if stage >= ._131072_2 do sort_pass(N, ._131072_2)
+							////if N > 128*1024 do sort_pass(N, ._262144)
+							//if stage >= ._262144_1 do sort_pass(N, ._262144_1)
+							//if stage >= ._262144_2 do sort_pass(N, ._262144_2)
+						} else if false {
+							//if stage >= ._1024 do sort2_pass(N, 2, ._1024)
+							//if stage >= ._2048 do sort2_pass(N, 1, ._2048)
+							//if stage >= ._4096 do sort2_pass(N, 1, ._4096)
+							//if stage >= ._8192 do sort2_pass(N, 1, ._8192)
+							//if stage >= ._16384 do sort2_pass(N, 1, ._16384)
+							//////if N >  16*1024 do sort2_pass(N, ._32768)
+							//if stage >= ._32768_1 do sort2_pass(N, 2, ._32768_1)
+							//if stage >= ._32768_2 do sort2_pass(N, 1, ._32768_2)
+							//////if N >  32*1024 do sort2_pass(N, ._65536)
+							//if stage >= ._65536_1 do sort2_pass(N, 2, ._65536_1)
+							//if stage >= ._65536_2 do sort2_pass(N, 1, ._65536_2)
+							//////if N >  64*1024 do sort2_pass(N, ._131072)
+							////if N >  64*1024 do sort2_pass(N, ._131072_1)
+							////if N >  64*1024 do sort2_pass(N, ._131072_2)
+							//////if N > 128*1024 do sort2_pass(N, ._262144)
+							////if N > 128*1024 do sort2_pass(N, ._262144_1)
+							////if N > 128*1024 do sort2_pass(N, ._262144_2)
 						} else {
-							if stage >= ._1024 do sort2_pass(N, 2, ._1024)
-							if stage >= ._2048 do sort2_pass(N, 1, ._2048)
-							if stage >= ._4096 do sort2_pass(N, 1, ._4096)
-							if stage >= ._8192 do sort2_pass(N, 1, ._8192)
-							if stage >= ._16384 do sort2_pass(N, 1, ._16384)
-							////if N >  16*1024 do sort2_pass(N, ._32768)
-							if stage >= ._32768_1 do sort2_pass(N, 2, ._32768_1)
-							if stage >= ._32768_2 do sort2_pass(N, 1, ._32768_2)
-							////if N >  32*1024 do sort2_pass(N, ._65536)
-							if stage >= ._65536_1 do sort2_pass(N, 2, ._65536_1)
-							if stage >= ._65536_2 do sort2_pass(N, 1, ._65536_2)
-							////if N >  64*1024 do sort2_pass(N, ._131072)
-							//if N >  64*1024 do sort2_pass(N, ._131072_1)
-							//if N >  64*1024 do sort2_pass(N, ._131072_2)
-							////if N > 128*1024 do sort2_pass(N, ._262144)
-							//if N > 128*1024 do sort2_pass(N, ._262144_1)
-							//if N > 128*1024 do sort2_pass(N, ._262144_2)
-						}
+							//GL_LABEL_BLOCK(fmt.tprintf("Sort Stage: %v", stage))	
+					    	gl.UseProgram(bitonic_sort_single_program)
+					        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, bitonic_data[0]);
+					        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, bitonic_data[1]);
 
+					        gl.Uniform1ui(0, N);
+
+					    	gl.MemoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
+					        gl.DispatchCompute(1, 1, 1)
+				        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+						}
 				    }
 
 				    {
@@ -338,7 +351,7 @@ main :: proc() {
 		    			block_query("Verify", step)
 				        gl.DispatchCompute(N / 512, 1, 1)
 		    		}
-		    		if stage != ._32768_1 && stage != ._65536_1 && stage != ._131072_1 && stage != ._262144_1 {	
+		    		if false && stage != ._32768_1 && stage != ._65536_1 && stage != ._131072_1 && stage != ._262144_1 {	
 		        		//GL_LABEL_BLOCK("Download Result")	
 
 				    	is_sorted: [32]b32
