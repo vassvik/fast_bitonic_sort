@@ -336,6 +336,7 @@ main :: proc() {
 					        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 2, bitonic_oversub_data);
 
 					        gl.Uniform1ui(0, N/1024);
+					        gl.Uniform1ui(1, bits.log2(N/1024));
 
 					    	gl.MemoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
 							//block_query(fmt.tprintf("Sort %v", stage), step)

@@ -16,6 +16,7 @@ layout (binding = 2, std430) buffer buffer_2 {
 };
 
 layout (location = 0) uniform uint u_workgroups_per_pass;
+layout (location = 1) uniform uint u_log2_workgroups_per_pass;
 
 
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in ;
@@ -579,136 +580,39 @@ void main() {
         s_ticket = atomicAdd(b_counters[0], 1);
     }
     barrier();
+    uint ticket = s_ticket;
+    uint pass = ticket >> u_log2_workgroups_per_pass;
+    uint group = ticket - pass*u_workgroups_per_pass;
 
-    if (s_ticket < u_workgroups_per_pass) {
-        uint group = s_ticket;
-        sort_1_to_1024(group);
-    } else if (s_ticket < 2*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[1], 0);
-            waiting = (done != u_workgroups_per_pass);            
-        } while (waiting);
-        
-        uint group = s_ticket - u_workgroups_per_pass;
+    if (pass > 0) {
+        uint done = atomicAdd(b_counters[pass], 0);
+        while (done != u_workgroups_per_pass) {
+            done = atomicAdd(b_counters[pass], 0);
+        } 
         memoryBarrierBuffer();
-        sort_1024_to_2048(group);
-    } else if (s_ticket < 3*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[2], 0);
-            waiting = (done != u_workgroups_per_pass);            
-        } while (waiting);
-        
-        uint group = s_ticket - 2*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_2048_to_4096(group);
-    } else if (s_ticket < 4*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[3], 0);
-            waiting = (done != u_workgroups_per_pass);            
-        } while (waiting);
-        
-        uint group = s_ticket - 3*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_4096_to_8192(group);
-    } else if (s_ticket < 5*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[4], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
+    }
 
-        uint group = s_ticket - 4*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_8192_to_16384(group);
-    } else if (s_ticket < 6*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[5], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
-
-        uint group = s_ticket - 5*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_16384_to_32768_1(group);
-    } else if (s_ticket < 7*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[6], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
-
-        uint group = s_ticket - 6*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_16384_to_32768_2(group);
-    } else if (s_ticket < 8*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[7], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
-
-        uint group = s_ticket - 7*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_32768_to_65536_1(group);
-    } else if (s_ticket < 9*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[8], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
-
-        uint group = s_ticket - 8*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_32768_to_65536_2(group);
-    } else if (s_ticket < 10*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[9], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
-
-        uint group = s_ticket - 9*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_65536_to_131072_1(group);
-    } else if (s_ticket < 11*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[10], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
-
-        uint group = s_ticket - 10*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_65536_to_131072_2(group);
-    } else if (s_ticket < 12*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[11], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
-
-        uint group = s_ticket - 11*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_131072_to_262144_1(group);
-    } else if (s_ticket < 13*u_workgroups_per_pass) {
-        bool waiting;
-        do {
-            uint done = atomicAdd(b_counters[12], 0);
-            waiting = (done != u_workgroups_per_pass);
-        } while (waiting);
-
-        uint group = s_ticket - 12*u_workgroups_per_pass;
-        memoryBarrierBuffer();
-        sort_131072_to_262144_2(group);
+    switch (pass) {
+    case 0:  sort_1_to_1024(group); break;
+    case 1:  sort_1024_to_2048(group); break;
+    case 2:  sort_2048_to_4096(group); break;
+    case 3:  sort_4096_to_8192(group); break;
+    case 4:  sort_8192_to_16384(group); break;
+    case 5:  sort_16384_to_32768_1(group); break;
+    case 6:  sort_16384_to_32768_2(group); break;
+    case 7:  sort_32768_to_65536_1(group); break;
+    case 8:  sort_32768_to_65536_2(group); break;
+    case 9:  sort_65536_to_131072_1(group); break;
+    case 10: sort_65536_to_131072_2(group); break;
+    case 11: sort_131072_to_262144_1(group); break;
+    case 12: sort_131072_to_262144_2(group); 
+    default:
         return;
     }
 
     barrier();
 
     if (gl_LocalInvocationIndex == 0) {
-        atomicAdd(b_counters[1+s_ticket/u_workgroups_per_pass], 1);
+        atomicAdd(b_counters[1+pass], 1);
     }
 }
