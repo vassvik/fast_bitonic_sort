@@ -500,7 +500,7 @@ void main() {
     uint pass = ticket / WORKGROUPS_PER_PASS;
     uint group = ticket % WORKGROUPS_PER_PASS;
 
-    if (pass > 0) memoryBarrierBuffer();
+    //if (pass > 0) memoryBarrierBuffer();
 
     switch (pass) {
     case 0:  sort_1_to_1024(group); break;
