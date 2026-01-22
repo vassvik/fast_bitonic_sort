@@ -348,26 +348,6 @@ void sort_8192_to_16384(uint group) {
     b_values2[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
-void sort_16384_to_32768(uint group) {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * group + lindex;
-
-    T sorted[32];
-    for (uint i = 0; i < 16; i++) {
-        uint idx  = gid^(i*1024);
-        sorted[i] = b_values1[idx];
-        sorted[i+16] = b_values1[idx^32767];
-    }
-
-    for (uint i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0);
-    for (uint i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);
-    for (uint i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);
-    for (uint i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);
-    for (uint i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);
-
-    b_values2[gid] = finalize_1024(lindex, sorted[0]);
-} 
-
 void sort_16384_to_32768_1(uint group) {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * group + lindex;
@@ -399,27 +379,6 @@ void sort_16384_to_32768_2(uint group) {
 
     for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);  // 4096
     for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);  // 2048
-
-    b_values2[gid] = finalize_1024(lindex, sorted[0]);
-} 
-
-void sort_32768_to_65536(uint group) {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * group + lindex;
-
-    T sorted[64];
-    for (uint i = 0; i < 32; i++) {
-        uint idx = gid^(i*1024);
-        sorted[i] = b_values1[idx];
-        sorted[i+32] = b_values1[idx^65535];
-    }
-
-    for (uint i = 0; i < 32; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+32], (gid&32768) != 0);
-    for (uint i = 0; i < 16; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+16], (gid&16384) != 0);
-    for (uint i = 0; i < 8;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8],  (gid&8192) != 0);
-    for (uint i = 0; i < 4;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4],  (gid&4096) != 0);
-    for (uint i = 0; i < 2;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2],  (gid&2048) != 0);
-    for (uint i = 0; i < 1;  i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1],  (gid&1024) != 0);
 
     b_values2[gid] = finalize_1024(lindex, sorted[0]);
 } 
@@ -460,31 +419,6 @@ void sort_32768_to_65536_2(uint group) {
     b_values2[gid] = finalize_1024(lindex, sorted[0]);
 } 
 
-void sort_65536_to_131072(uint group) {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * group + lindex;
-
-
-    T sorted2[16];
-    for (uint j = 0; j < 16; j++) {
-        T sorted[8];
-        for (uint i = 0; i < 4; i++) sorted[i]    = b_values1[gid^(j*1024)^(i*16384)];
-        for (uint i = 0; i < 4; i++) sorted[4+i] = b_values1[gid^(j*1024)^(i*16384)^131071];
-
-        for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&65536) != 0); // 131072 
-        for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&32768) != 0); // 65536 
-        for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&16384) != 0); // 32768 
-        sorted2[j] = sorted[0];
-    }
-
-    for (uint i = 0; i < 8;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+8],  (gid&8192) != 0);  // 4096 
-    for (uint i = 0; i < 4;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+4],  (gid&4096) != 0);  // 4096 
-    for (uint i = 0; i < 2;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+2],  (gid&2048) != 0);  // 4096 
-    for (uint i = 0; i < 1;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+1],  (gid&1024) != 0);  // 2048 
-
-    b_values2[gid] = finalize_1024(lindex, sorted2[0]);
-}
-
 void sort_65536_to_131072_1(uint group) {
     uint lindex = gl_LocalInvocationIndex;
     uint gid = 1024 * group + lindex;
@@ -515,31 +449,6 @@ void sort_65536_to_131072_2(uint group) {
 
     b_values2[gid] = finalize_1024(lindex, sorted[0]);
 } 
-
-void sort_131072_to_262144(uint group) {
-    uint lindex = gl_LocalInvocationIndex;
-    uint gid = 1024 * group + lindex;
-
-    T sorted2[16];
-    for (uint j = 0; j < 16; j++) {
-        T sorted[16];
-        for (uint i = 0; i < 8; i++) sorted[i]    = b_values1[gid^(j*1024)^(i*16384)];
-        for (uint i = 0; i < 8; i++) sorted[8+i] = b_values1[gid^(j*1024)^(i*16384)^262144];
-
-        for (uint i = 0; i < 8; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+8], (gid&131072) != 0); // 131072 
-        for (uint i = 0; i < 4; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+4], (gid&65536) != 0); // 131072 
-        for (uint i = 0; i < 2; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+2], (gid&32768) != 0); // 65536 
-        for (uint i = 0; i < 1; i++) sorted[i] = compare_and_select(sorted[i], sorted[i+1], (gid&16384) != 0); // 32768 
-        sorted2[j] = sorted[0];
-    }
-
-    for (uint i = 0; i < 8;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+8],  (gid&8192) != 0);  // 4096 
-    for (uint i = 0; i < 4;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+4],  (gid&4096) != 0);  // 4096 
-    for (uint i = 0; i < 2;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+2],  (gid&2048) != 0);  // 4096 
-    for (uint i = 0; i < 1;   i++) sorted2[i] = compare_and_select(sorted2[i], sorted2[i+1],  (gid&1024) != 0);  // 2048 
-
-    b_values2[gid] = finalize_1024(lindex, sorted2[0]);
-}
 
 void sort_131072_to_262144_1(uint group) {
     uint lindex = gl_LocalInvocationIndex;
