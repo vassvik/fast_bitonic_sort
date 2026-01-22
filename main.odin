@@ -340,9 +340,41 @@ main :: proc() {
 
 					    	gl.MemoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
 							//block_query(fmt.tprintf("Sort %v", stage), step)
-					        gl.DispatchCompute(N / 1024, 13, 1)
-
-					        bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+							switch stage {
+							case ._1024:	
+					        	gl.DispatchCompute(N / 1024, 1, 1)
+					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+							case ._2048:	
+					        	gl.DispatchCompute(N / 1024, 2, 1)
+							case ._4096:	
+					        	gl.DispatchCompute(N / 1024, 3, 1)
+					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+							case ._8192:	
+					        	gl.DispatchCompute(N / 1024, 4, 1)
+							case ._16384:	
+					        	gl.DispatchCompute(N / 1024, 5, 1)
+					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+							case ._32768_1:	
+					        	gl.DispatchCompute(N / 1024, 6, 1)
+							case ._32768_2:	
+					        	gl.DispatchCompute(N / 1024, 7, 1)
+					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+							case ._65536_1:	
+					        	gl.DispatchCompute(N / 1024, 8, 1)
+							case ._65536_2:	
+					        	gl.DispatchCompute(N / 1024, 9, 1)
+					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+							case ._131072_1:	
+					        	gl.DispatchCompute(N / 1024, 10, 1)
+							case ._131072_2:	
+					        	gl.DispatchCompute(N / 1024, 11, 1)
+					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+							case ._262144_1:	
+					        	gl.DispatchCompute(N / 1024, 12, 1)
+							case ._262144_2:	
+					        	gl.DispatchCompute(N / 1024, 13, 1)
+					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
+							}
 						}
 				    }
 
