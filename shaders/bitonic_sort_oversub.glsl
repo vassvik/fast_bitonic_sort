@@ -487,8 +487,8 @@ shared uint s_ticket;
 void main() {
     if (gl_LocalInvocationIndex == 0) {
         uint ticket = atomicAdd(b_counters[0], 1);
-        uint pass = ticket >> u_log2_workgroups_per_pass;
         s_ticket = ticket;
+        uint pass = ticket >> u_log2_workgroups_per_pass;
         if (pass > 0) {
             uint done = atomicAdd(b_counters[pass], 0);
             while (done != u_workgroups_per_pass) {
@@ -497,6 +497,7 @@ void main() {
         }
     }
     barrier();
+    
     uint ticket = s_ticket;
     uint pass = ticket >> u_log2_workgroups_per_pass;
     uint group = ticket - pass*u_workgroups_per_pass;

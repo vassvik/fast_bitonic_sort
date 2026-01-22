@@ -154,7 +154,7 @@ main :: proc() {
     	fmt.println("N =", N)
 	    for M := u32(0); M < 1 + 0*bits.log2(N); M += 1 {
 	    	fmt.println("M =", M)
-	    	for step := 0; step < 400; step += 1 {
+	    	for step := 0; step < 2000; step += 1 {
 		    	if glfw.WindowShouldClose(window) do break
 
 		    	process_active_queries()
@@ -338,41 +338,42 @@ main :: proc() {
 					        gl.Uniform1ui(0, N/1024);
 					        gl.Uniform1ui(1, bits.log2(N/1024));
 
+					        max_stage := u32(13)
 					    	gl.MemoryBarrier(gl.SHADER_STORAGE_BARRIER_BIT)
 							//block_query(fmt.tprintf("Sort %v", stage), step)
 							switch stage {
 							case ._1024:	
-					        	gl.DispatchCompute(N / 1024, 1, 1)
+					        	gl.DispatchCompute(N / 1024, min(1, max_stage), 1)
 					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 							case ._2048:	
-					        	gl.DispatchCompute(N / 1024, 2, 1)
+					        	gl.DispatchCompute(N / 1024, min(2, max_stage), 1)
 							case ._4096:	
-					        	gl.DispatchCompute(N / 1024, 3, 1)
+					        	gl.DispatchCompute(N / 1024, min(3, max_stage), 1)
 					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 							case ._8192:	
-					        	gl.DispatchCompute(N / 1024, 4, 1)
+					        	gl.DispatchCompute(N / 1024, min(4, max_stage), 1)
 							case ._16384:	
-					        	gl.DispatchCompute(N / 1024, 5, 1)
+					        	gl.DispatchCompute(N / 1024, min(5, max_stage), 1)
 					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 							case ._32768_1:	
-					        	gl.DispatchCompute(N / 1024, 6, 1)
+					        	gl.DispatchCompute(N / 1024, min(6, max_stage), 1)
 							case ._32768_2:	
-					        	gl.DispatchCompute(N / 1024, 7, 1)
+					        	gl.DispatchCompute(N / 1024, min(7, max_stage), 1)
 					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 							case ._65536_1:	
-					        	gl.DispatchCompute(N / 1024, 8, 1)
+					        	gl.DispatchCompute(N / 1024, min(8, max_stage), 1)
 							case ._65536_2:	
-					        	gl.DispatchCompute(N / 1024, 9, 1)
+					        	gl.DispatchCompute(N / 1024, min(9, max_stage), 1)
 					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 							case ._131072_1:	
-					        	gl.DispatchCompute(N / 1024, 10, 1)
+					        	gl.DispatchCompute(N / 1024, min(10, max_stage), 1)
 							case ._131072_2:	
-					        	gl.DispatchCompute(N / 1024, 11, 1)
+					        	gl.DispatchCompute(N / 1024, min(11, max_stage), 1)
 					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 							case ._262144_1:	
-					        	gl.DispatchCompute(N / 1024, 12, 1)
+					        	gl.DispatchCompute(N / 1024, min(12, max_stage), 1)
 							case ._262144_2:	
-					        	gl.DispatchCompute(N / 1024, 13, 1)
+					        	gl.DispatchCompute(N / 1024, min(13, max_stage), 1)
 					        	bitonic_data[0], bitonic_data[1] = bitonic_data[1], bitonic_data[0]
 							}
 						}
