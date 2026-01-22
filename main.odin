@@ -52,7 +52,7 @@ bitonic_data: [2]u32
 bitonic_sort_base_program: Program
 bitonic_sort_base2_program: Program
 bitonic_sort_base3_program: Program
-bitonic_sort_oversub_program: Program
+bitonic_sort_oversub_programs: [9]Program
 
 main :: proc() {
     glfw.SetErrorCallback(error_callback);
@@ -107,7 +107,22 @@ main :: proc() {
     bitonic_sort_base_program = load_compute_file("shaders/bitonic_sort_base.glsl")
     bitonic_sort_base2_program = load_compute_file("shaders/bitonic_sort_base2.glsl")
     bitonic_sort_base3_program = load_compute_file("shaders/bitonic_sort_base3.glsl")
-    bitonic_sort_oversub_program = load_compute_file("shaders/bitonic_sort_oversub.glsl")
+
+    {
+        filename := "shaders/bitonic_sort_oversub.glsl"
+        source, ok := os.read_entire_file(filename, context.temp_allocator)
+        if ok {
+            for i in u32(0)..<9 {
+                replacement1 := fmt.tprintf("%v", 1<<i)
+                replaced_source := replace_placeholder(string(source), "<num1>", replacement1, context.temp_allocator)
+
+                //fmt.println(replaced_source)
+                program := load_compute_source(replaced_source)
+                if program == 0 do break
+                bitonic_sort_oversub_programs[i] = program
+            }
+        }
+    }
 
     {
         filename := "shaders/bitonic_sort.glsl"
@@ -330,7 +345,7 @@ main :: proc() {
 							//if N > 128*1024 do sort2_pass(N, ._262144_2)
 						} else {
 							//GL_LABEL_BLOCK(fmt.tprintf("Sort Stage: %v", stage))	
-					    	gl.UseProgram(bitonic_sort_oversub_program)
+					    	gl.UseProgram(bitonic_sort_oversub_programs[bits.log2(N/1024)]) 
 					        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 0, bitonic_data[0]);
 					        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 1, bitonic_data[1]);
 					        gl.BindBufferBase(gl.SHADER_STORAGE_BUFFER, 2, bitonic_oversub_data);

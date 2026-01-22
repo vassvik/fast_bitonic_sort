@@ -15,13 +15,11 @@ layout (binding = 2, std430) buffer buffer_2 {
   uint b_counters[32];
 };
 
-layout (location = 0) uniform uint u_workgroups_per_pass;
-layout (location = 1) uniform uint u_log2_workgroups_per_pass;
-
-
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in ;
 
 #define T uint
+
+#define WORKGROUPS_PER_PASS <num1>
 
 T compare_and_select(T a, T b, bool select_max) {
     //return mix(min(a, b), max(a, b), select_max);
@@ -488,19 +486,19 @@ void main() {
     if (gl_LocalInvocationIndex == 0) {
         uint ticket = atomicAdd(b_counters[0], 1);
         s_ticket = ticket;
-        uint pass = ticket >> u_log2_workgroups_per_pass;
+        uint pass = ticket / WORKGROUPS_PER_PASS;
         if (pass > 0) {
             uint done = atomicAdd(b_counters[pass], 0);
-            while (done != u_workgroups_per_pass) {
+            while (done != WORKGROUPS_PER_PASS) {
                 done = atomicAdd(b_counters[pass], 0);
             } 
         }
     }
     barrier();
-    
+
     uint ticket = s_ticket;
-    uint pass = ticket >> u_log2_workgroups_per_pass;
-    uint group = ticket - pass*u_workgroups_per_pass;
+    uint pass = ticket / WORKGROUPS_PER_PASS;
+    uint group = ticket % WORKGROUPS_PER_PASS;
 
     if (pass > 0) memoryBarrierBuffer();
 
